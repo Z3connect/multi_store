@@ -1,0 +1,358 @@
+<!-- START OF FILE analytics.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sales Analytics | POS</title>
+  <!-- Chart.js for beautiful charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- jsPDF and AutoTable plugin for PDF reports -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <!-- html2canvas to capture the dashboard as an image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+    #main-container { max-width: 1200px; margin: auto; }
+    h1 { text-align: center; color: #1a252f; }
+    .nav-links { text-align: center; margin-bottom: 25px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+    .controls > div { flex: 1; min-width: 180px; }
+    .controls label { font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
+    .controls input, .controls button { width: 100%; padding: 10px; box-sizing: border-box; border-radius: 5px; border: 1px solid #ccc; }
+    .controls button { color: white; border: none; cursor: pointer; background-color: #007bff; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .stat-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; }
+    .stat-card h4 { margin: 0 0 10px 0; color: #666; }
+    .stat-card p { font-size: 2em; font-weight: bold; margin: 0; color: #1a252f; }
+    .chart-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+    .report-buttons { text-align: center; display: flex; gap: 15px; justify-content: center; }
+    .report-buttons button { width: auto; padding: 12px 25px; }
+    #downloadPdfBtn { background-color: #dc3545; }
+    #downloadCsvBtn { background-color: #28a745; }
+    #downloadDashboardBtn { background-color: #ffc107; color: #333; }
+  </style>
+</head>
+<body>
+<div id="main-container">
+  <h1>📊 Sales Analytics Dashboard</h1>
+  <p class="nav-links"><a href="view-products.html">Back to Inventory</a> | <a href="bill-history.html">Bill History</a></p>
+
+  <!-- FILTERS AND CONTROLS -->
+  <div class="controls">
+    <div>
+      <label for="startDate">Start Date</label>
+      <input type="date" id="startDate">
+    </div>
+    <div>
+      <label for="endDate">End Date</label>
+      <input type="date" id="endDate">
+    </div>
+    <div>
+      <button onclick="applyDateFilter()">Apply Custom Range</button>
+    </div>
+    <div><button onclick="setFilter('week')">This Week</button></div>
+    <div><button onclick="setFilter('month')">This Month</button></div>
+    <div><button onclick="setFilter('all')">All Time</button></div>
+  </div>
+
+  <!-- KEY METRIC CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h4>TOTAL SALES</h4>
+      <p id="totalSalesStat">₹0.00</p>
+    </div>
+    <div class="stat-card">
+      <h4>NET SALES (After Refunds)</h4>
+      <p id="netSalesStat">₹0.00</p>
+    </div>
+    <div class="stat-card">
+      <h4>TOTAL PROFIT</h4>
+      <p id="totalProfitStat">₹0.00</p>
+    </div>
+    <div class="stat-card">
+      <h4>TRANSACTIONS</h4>
+      <p id="totalTransactionsStat">0</p>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="chart-container">
+    <h3>Sales Over Time</h3>
+    <canvas id="salesOverTimeChart"></canvas>
+  </div>
+  <div class="chart-container" style="max-width: 500px; margin-left:auto; margin-right:auto;">
+    <h3>Payment Method Breakdown</h3>
+    <canvas id="paymentMethodChart"></canvas>
+  </div>
+
+  <!-- REPORTING BUTTONS -->
+  <div class="report-buttons">
+    <button id="downloadPdfBtn" onclick="downloadPDF()">Download PDF Report</button>
+    <button id="downloadCsvBtn" onclick="downloadCSV()">Download CSV Data</button>
+    <button id="downloadDashboardBtn" onclick="downloadDashboardImage()">Download Dashboard Image</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  let allBills = [];
+  let skuToBuyingPriceMap = new Map();
+  let salesChartInstance, paymentChartInstance;
+  let currentlyFilteredBills = [];
+
+  // --- DATA LOADING & PREPARATION ---
+  async function loadAnalyticsData() {
+    console.log("Loading all bills and products...");
+    const billsPromise = db.collection("bills").get();
+    const productsPromise = db.collection("products").get();
+
+    try {
+      const [billsSnapshot, productsSnapshot] = await Promise.all([billsPromise, productsPromise]);
+      
+      // Create a lookup map for buying price to calculate profit
+      productsSnapshot.forEach(doc => {
+        const product = doc.data();
+        product.variants.forEach(variant => {
+          skuToBuyingPriceMap.set(variant.sku, product.buyingPrice);
+        });
+      });
+      
+      allBills = billsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log(`Loaded ${allBills.length} bills and mapped ${skuToBuyingPriceMap.size} SKUs.`);
+      
+      // Set initial filter to "All Time"
+      setFilter('all');
+    } catch (error) {
+      console.error("Error loading initial data: ", error);
+      alert("Could not load analytics data. Please check the console.");
+    }
+  }
+
+  // --- FILTERING LOGIC ---
+  function setFilter(period) {
+    const today = new Date();
+    let start, end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    if (period === 'week') {
+      start = new Date(today.setDate(today.getDate() - today.getDay()));
+    } else if (period === 'month') {
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+    } else { // 'all'
+      start = new Date(0); // The epoch, to include all bills
+    }
+    
+    start.setHours(0, 0, 0, 0);
+    document.getElementById('startDate').valueAsDate = start > new Date(0) ? start : null;
+    document.getElementById('endDate').valueAsDate = end;
+    updateDashboard(start, end);
+  }
+
+  function applyDateFilter() {
+    const startDate = document.getElementById('startDate').valueAsDate;
+    const endDate = document.getElementById('endDate').valueAsDate;
+
+    if (!startDate || !endDate) {
+      alert("Please select both a start and end date.");
+      return;
+    }
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+    updateDashboard(startDate, endDate);
+  }
+
+  // --- CORE DASHBOARD UPDATE FUNCTION ---
+    // --- CORE DASHBOARD UPDATE FUNCTION (CORRECTED) ---
+  function updateDashboard(startDate, endDate) {
+    currentlyFilteredBills = allBills.filter(bill => {
+      const billDate = bill.date.toDate();
+      return billDate >= startDate && billDate <= endDate;
+    });
+    
+    if (currentlyFilteredBills.length === 0 && allBills.length > 0) {
+      // Don't alert if data is just loading, but do alert if filters yield no results
+      alert("No data found for the selected period.");
+    }
+    
+    // Calculate metrics
+    let totalSales = 0, totalRefunds = 0, totalProfit = 0;
+    let paymentCounts = { Cash: 0, GPay: 0 };
+    let salesByDate = new Map();
+
+    currentlyFilteredBills.forEach(bill => {
+      // Use (bill.grandTotal || 0) to prevent NaN if the field is missing
+      totalSales += bill.grandTotal || 0; // CHANGED
+      totalRefunds += bill.totalRefundedAmount || 0; // This was already correct, but good to be consistent
+      
+      // Profit calculation
+      // Ensure bill.items is an array before trying to loop through it
+      if (Array.isArray(bill.items)) { // CHANGED: Added a check for safety
+        bill.items.forEach(item => {
+          const buyingPrice = skuToBuyingPriceMap.get(item.sku) || 0;
+          // Guard against missing price or quantity on an item level
+          const itemRevenue = (item.price || 0) * (item.quantity || 0); // CHANGED
+          const itemCost = buyingPrice * (item.quantity || 0); // CHANGED
+          totalProfit += (itemRevenue - itemCost);
+        });
+      }
+
+      // Payment method count
+      if (bill.paymentMethod in paymentCounts) {
+        paymentCounts[bill.paymentMethod]++;
+      }
+
+      // Aggregate sales by date for the line chart
+      const dateString = bill.date.toDate().toISOString().split('T')[0]; // YYYY-MM-DD
+      const dayTotal = salesByDate.get(dateString) || 0;
+      // Also guard the value being added here
+      salesByDate.set(dateString, dayTotal + (bill.grandTotal || 0)); // CHANGED
+    });
+    
+    // Update stat cards
+    document.getElementById('totalSalesStat').innerText = `₹${totalSales.toFixed(2)}`;
+    document.getElementById('netSalesStat').innerText = `₹${(totalSales - totalRefunds).toFixed(2)}`;
+    document.getElementById('totalProfitStat').innerText = `₹${totalProfit.toFixed(2)}`;
+    document.getElementById('totalTransactionsStat').innerText = currentlyFilteredBills.length;
+    
+    // Update charts
+    renderSalesChart(salesByDate);
+    renderPaymentChart(paymentCounts);
+  }
+
+  // --- CHART RENDERING ---
+  function renderSalesChart(salesData) {
+    const ctx = document.getElementById('salesOverTimeChart').getContext('2d');
+    const sortedDates = Array.from(salesData.keys()).sort();
+    const labels = sortedDates;
+    const data = sortedDates.map(date => salesData.get(date));
+
+    if (salesChartInstance) salesChartInstance.destroy();
+    salesChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{
+          label: 'Sales (₹)',
+          data,
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0, 123, 255, 0.1)',
+          tension: 0.1,
+          fill: true
+      }] },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
+  function renderPaymentChart(paymentData) {
+    const ctx = document.getElementById('paymentMethodChart').getContext('2d');
+    if (paymentChartInstance) paymentChartInstance.destroy();
+    paymentChartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: Object.keys(paymentData),
+        datasets: [{
+          label: 'Payment Methods',
+          data: Object.values(paymentData),
+          backgroundColor: ['#28a745', '#ffc107']
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+  
+  // --- DOWNLOAD FUNCTIONALITY ---
+  function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    doc.setFontSize(18);
+    doc.text('Sales & Profit Report', 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
+    
+    // Add summary stats
+    const summaryText = `
+      Total Sales: ${document.getElementById('totalSalesStat').textContent}
+      Net Sales: ${document.getElementById('netSalesStat').textContent}
+      Total Profit: ${document.getElementById('totalProfitStat').textContent}
+      Transactions: ${document.getElementById('totalTransactionsStat').textContent}
+    `;
+    doc.text(summaryText, 14, 40);
+
+    // Prepare table data
+    const head = [['Bill ID', 'Date', 'Customer', 'Total (₹)', 'Refund (₹)', 'Net (₹)', 'Payment']];
+    const body = currentlyFilteredBills.map(bill => [
+      bill.billId,
+      bill.date.toDate().toLocaleDateString(),
+      bill.customerName,
+      bill.grandTotal.toFixed(2),
+      (bill.totalRefundedAmount || 0).toFixed(2),
+      bill.netTotal.toFixed(2),
+      bill.paymentMethod
+    ]);
+    
+    doc.autoTable({ head, body, startY: 65 });
+    
+    // Add charts (optional, but a great feature)
+    const salesChartImg = salesChartInstance.toBase64Image();
+    const paymentChartImg = paymentChartInstance.toBase64Image();
+    const finalY = doc.lastAutoTable.finalY || 80;
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.text('Charts', 14, 20);
+    doc.addImage(salesChartImg, 'PNG', 15, 30, 180, 90);
+    doc.addImage(paymentChartImg, 'PNG', 60, 130, 90, 90);
+    
+    doc.save(`sales-report-${new Date().toISOString().slice(0,10)}.pdf`);
+  }
+
+  function downloadCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Bill ID,Date,Customer,SKU,Product Name,Quantity,Item Price,Item Total,Payment Method\r\n";
+    
+    currentlyFilteredBills.forEach(bill => {
+      bill.items.forEach(item => {
+        let row = [
+          bill.billId,
+          `"${bill.date.toDate().toLocaleString()}"`,
+          `"${bill.customerName}"`,
+          item.sku,
+          `"${item.name}"`,
+          item.quantity,
+          item.price.toFixed(2),
+          (item.quantity * item.price).toFixed(2),
+          bill.paymentMethod
+        ].join(",");
+        csvContent += row + "\r\n";
+      });
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `sales-data-${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function downloadDashboardImage() {
+    const dashboardElement = document.getElementById('main-container');
+    html2canvas(dashboardElement, { scale: 2 }).then(canvas => {
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `analytics-dashboard-${new Date().toISOString().slice(0,10)}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }
+
+  window.onload = loadAnalyticsData;
+</script>
+</body>
+</html>

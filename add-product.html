@@ -1,0 +1,248 @@
+<!-- START OF FILE add-product.html (FINAL VERSION WITH VARIANT EDITING) -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Products | POS</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .main-container { display: flex; gap: 40px; margin-bottom: 40px; }
+    .form-section { border: 1px solid #ccc; padding: 20px; border-radius: 8px; flex: 1; }
+    h2, h3 { margin-top: 0; }
+    input, select, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    button { color: white; border: none; cursor: pointer; border-radius: 4px; }
+    #addVariantBtn { background: #28a745; }
+    #cancelVariantEditBtn { background: #6c757d; display: none; } /* New button */
+    #saveProductBtn { background: #007bff; }
+    #cancelEditBtn { background: #6c757d; display: none; }
+
+    /* New styles for variant list items */
+    #variantList { list-style-type: none; padding: 0; }
+    #variantList li { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 8px; margin-top: 5px; font-size: 0.9em; border-radius: 4px;}
+    .variant-actions button { width: auto; font-size: 0.8em; padding: 4px 8px; margin-left: 5px;}
+    .variant-actions .edit-btn { background-color: #ffc107; }
+    .variant-actions .remove-btn { background-color: #dc3545; }
+    
+    .product-list-container { margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; }
+    th { background-color: #f2f2f2; }
+    .actions-cell button { width: auto; padding: 5px 10px; font-size: 0.8em; margin-right: 5px; }
+    .deactivated-row { background-color: #fcecec; color: #a9a9a9; }
+    .deactivated-row button { opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+  <div class="main-container">
+    <div class="form-section">
+      <h2 id="form-title">➕ Add New Product</h2>
+      <!-- Main product details form -->
+      <h3>Step 1: Product Details</h3>
+      <select id="categorySelect"></select>
+      <input type="text" id="productName" placeholder="Product Name">
+      <input type="text" id="productBrand" placeholder="Brand">
+      <input type="number" id="buyingPrice" placeholder="Buying Price (₹)">
+
+      <!-- Variant details form -->
+      <h3 id="variant-form-title">Step 2: Add Variants</h3>
+      <input type="text" id="variantColor" placeholder="Color">
+      <input type="text" id="variantSize" placeholder="Size">
+      <input type="number" id="variantSellingPrice" placeholder="Selling Price (₹)">
+      <input type="number" id="variantStock" placeholder="Stock Quantity">
+      <button id="addVariantBtn" onclick="addOrUpdateVariant()">Add This Variant</button>
+      <button id="cancelVariantEditBtn" onclick="cancelVariantEdit()">Cancel Edit</button> <!-- NEW -->
+      <hr>
+      <button id="saveProductBtn" onclick="saveProduct()">✅ Save Product</button>
+      <button id="cancelEditBtn" onclick="cancelEdit()">❌ Cancel Product Edit</button>
+      <p id="status"></p>
+    </div>
+    <div class="form-section">
+      <h3>📦 Product Preview</h3>
+      <!-- Preview section is now interactive -->
+      <strong>Name:</strong> <span id="previewName"></span><br>
+      <strong>Brand:</strong> <span id="previewBrand"></span><br>
+      <strong>Category:</strong> <span id="previewCategory"></span><br>
+      <strong>Buying Price:</strong> ₹<span id="previewBuyingPrice"></span><br>
+      <h4>Variants Added:</h4>
+      <ul id="variantList"></ul>
+    </div>
+  </div>
+  <hr>
+  
+  <div class="product-list-container">
+    <h2>📋 Existing Products (<a href="view-products.html">Go to Full View Page</a>)</h2>
+    <!-- Table remains the same -->
+    <table>
+      <thead>
+        <tr>
+          <th>Name / Brand</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Variants</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="productListTableBody"></tbody>
+    </table>
+  </div>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    let currentVariants = [];
+    let editModeProductId = null;
+    let editingVariantIndex = null; // NEW: State to track which variant is being edited
+
+    // --- UPDATED to be INTERACTIVE ---
+    function updatePreviewUI() {
+      // Update main product preview text
+      document.getElementById('previewName').innerText = document.getElementById('productName').value;
+      document.getElementById('previewBrand').innerText = document.getElementById('productBrand').value;
+      const catSelect = document.getElementById('categorySelect');
+      if (catSelect.options.length > 0) { document.getElementById('previewCategory').innerText = catSelect.options[catSelect.selectedIndex].text; }
+      document.getElementById('previewBuyingPrice').innerText = document.getElementById('buyingPrice').value;
+      
+      const variantList = document.getElementById('variantList');
+      variantList.innerHTML = '';
+      currentVariants.forEach((v, index) => {
+          const listItem = document.createElement('li');
+          listItem.innerHTML = `
+              <span>${v.color}, ${v.size} | Price: ₹${v.sellingPrice} | Stock: ${v.stock} | SKU: ${v.sku}</span>
+              <div class="variant-actions">
+                  <button class="edit-btn" onclick="editVariant(${index})">Edit</button>
+                  <button class="remove-btn" onclick="removeVariant(${index})">Remove</button>
+              </div>
+          `;
+          variantList.appendChild(listItem);
+      });
+    }
+
+    // --- NEW: Function to populate the form to edit a specific variant ---
+    function editVariant(index) {
+        editingVariantIndex = index;
+        const variant = currentVariants[index];
+
+        document.getElementById('variantColor').value = variant.color;
+        document.getElementById('variantSize').value = variant.size;
+        document.getElementById('variantSellingPrice').value = variant.sellingPrice;
+        document.getElementById('variantStock').value = variant.stock;
+
+        // Change UI to "Edit Variant" mode
+        document.getElementById('variant-form-title').innerText = 'Step 2: Edit Variant';
+        document.getElementById('addVariantBtn').innerText = 'Update Variant';
+        document.getElementById('cancelVariantEditBtn').style.display = 'inline-block';
+    }
+
+    // --- NEW: Function to remove a variant from the temporary list ---
+    function removeVariant(index) {
+        if (confirm('Are you sure you want to remove this variant?')) {
+            currentVariants.splice(index, 1);
+            updatePreviewUI();
+        }
+    }
+    
+    // --- NEW: Function to cancel editing a variant ---
+    function cancelVariantEdit() {
+        editingVariantIndex = null;
+        // Clear variant form fields
+        document.getElementById('variantColor').value = '';
+        document.getElementById('variantSize').value = '';
+        document.getElementById('variantSellingPrice').value = '';
+        document.getElementById('variantStock').value = '';
+        
+        // Reset UI back to "Add Variant" mode
+        document.getElementById('variant-form-title').innerText = 'Step 2: Add Variants';
+        document.getElementById('addVariantBtn').innerText = 'Add This Variant';
+        document.getElementById('cancelVariantEditBtn').style.display = 'none';
+    }
+
+    // --- RENAMED & UPDATED: This function now handles both ADDING and UPDATING a variant ---
+    function addOrUpdateVariant() {
+      const color = document.getElementById('variantColor').value.trim();
+      const size = document.getElementById('variantSize').value.trim();
+      const sellingPrice = parseFloat(document.getElementById('variantSellingPrice').value);
+      const stock = parseInt(document.getElementById('variantStock').value);
+      const name = document.getElementById('productName').value.trim();
+      const brand = document.getElementById('productBrand').value.trim();
+
+      if (!color || !size || isNaN(sellingPrice) || isNaN(stock) || !name || !brand) {
+          alert("Please fill Product Details and all Variant fields first.");
+          return;
+      }
+      
+      const sku = `${brand.slice(0, 3)}-${name.slice(0, 3)}-${color.slice(0, 3)}-${size}`.toUpperCase().replace(/\s/g, '');
+      const variantData = { sku, color, size, sellingPrice, stock };
+
+      if (editingVariantIndex !== null) {
+          // UPDATE the existing variant in the array
+          currentVariants[editingVariantIndex] = variantData;
+      } else {
+          // ADD a new variant to the array
+          currentVariants.push(variantData);
+      }
+
+      updatePreviewUI();
+      cancelVariantEdit(); // Reset the variant form and its state
+    }
+    
+    // --- UPDATED to reset variant edit state on full cancellation ---
+    function cancelEdit() {
+      cancelVariantEdit(); // Also reset the variant form
+      editModeProductId = null;
+      currentVariants = [];
+      document.querySelectorAll('.main-container input, .main-container select').forEach(el => {
+          if(el.type !== 'select-one') el.value = '';
+      });
+      document.getElementById('categorySelect').selectedIndex = 0;
+      updatePreviewUI();
+      document.getElementById('form-title').innerText = '➕ Add New Product';
+      document.getElementById('saveProductBtn').innerText = '✅ Save Product';
+      document.getElementById('cancelEditBtn').style.display = 'none';
+      document.getElementById('status').innerText = '';
+    }
+
+    // --- The rest of the JS is UNCHANGED from the previous version ---
+    function loadProductList() {
+      const tableBody = document.getElementById('productListTableBody');
+      tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
+      db.collection("products").orderBy("name").get().then(snapshot => {
+        tableBody.innerHTML = '';
+        snapshot.forEach(doc => {
+          const product = doc.data();
+          product.id = doc.id;
+          const row = document.createElement('tr');
+          row.className = product.isActive ? '' : 'deactivated-row';
+          const statusText = product.isActive ? 'Active' : 'Inactive';
+          const toggleButtonText = product.isActive ? 'Deactivate' : 'Activate';
+          const toggleButtonColor = product.isActive ? '#ffc107' : '#28a745';
+          const variantsCell = document.createElement('td');
+          const viewBtn = document.createElement('button');
+          viewBtn.textContent = `View (${product.variants.length})`;
+          viewBtn.onclick = () => {
+            let variantDetails = `Variants for ${product.name}:\n\n`;
+            product.variants.forEach(v => { variantDetails += `SKU: ${v.sku}\nColor: ${v.color}, Size: ${v.size}\nSelling Price: ₹${v.sellingPrice}, Stock: ${v.stock}\n\n`; });
+            alert(variantDetails);
+          };
+          variantsCell.appendChild(viewBtn);
+          row.innerHTML = `
+            <td><b>${product.name}</b><br><small>${product.brand}</small></td>
+            <td>${product.categoryName}</td>
+            <td>${statusText}</td>
+            <td class="actions-cell">
+              <button style="background-color: #17a2b8;" onclick="editProduct('${product.id}')">Edit</button>
+              <button style="background-color: ${toggleButtonColor};" onclick="toggleProductStatus('${product.id}', ${product.isActive})">${toggleButtonText}</button>
+            </td>
+          `;
+          row.insertBefore(variantsCell, row.cells[3]);
+          tableBody.appendChild(row);
+        });
+      });
+    }
+    function toggleProductStatus(productId, currentStatus) { db.collection("products").doc(productId).update({isActive: !currentStatus}).then(() => loadProductList()); }
+    function editProduct(productId) { db.collection("products").doc(productId).get().then(doc => { if (!doc.exists) return; const product = doc.data(); document.getElementById('productName').value = product.name; document.getElementById('productBrand').value = product.brand; document.getElementById('buyingPrice').value = product.buyingPrice; document.getElementById('categorySelect').value = product.categoryId; currentVariants = product.variants; updatePreviewUI(); editModeProductId = productId; document.getElementById('form-title').innerText = '📝 Edit Product'; document.getElementById('saveProductBtn').innerText = '💾 Update Product'; document.getElementById('cancelEditBtn').style.display = 'inline-block'; window.scrollTo(0, 0); }); }
+    function saveProduct() { const categorySelect = document.getElementById('categorySelect'); const productData = { name: document.getElementById('productName').value.trim(), brand: document.getElementById('productBrand').value.trim(), buyingPrice: parseFloat(document.getElementById('buyingPrice').value), categoryId: categorySelect.value, categoryName: categorySelect.options[categorySelect.selectedIndex].text, variants: currentVariants }; if (!productData.name || !productData.brand || isNaN(productData.buyingPrice) || currentVariants.length === 0) { document.getElementById('status').innerText = "❌ Please fill all details and add at least one variant."; return; } let promise; if (editModeProductId) { promise = db.collection("products").doc(editModeProductId).update(productData); } else { productData.isActive = true; promise = db.collection("products").add(productData); } promise.then(() => { const message = editModeProductId ? 'updated' : 'saved'; document.getElementById('status').innerText = `✅ Product ${message} successfully!`; cancelEdit(); loadProductList(); }).catch(error => { document.getElementById('status').innerText = "⚠️ Error: " + error.message; }); }
+    window.onload = () => { const categorySelect = document.getElementById('categorySelect'); db.collection("categories").get().then(snapshot => { snapshot.forEach(doc => { const option = document.createElement("option"); option.value = doc.id; option.text = doc.data().name; categorySelect.add(option); }); }); loadProductList(); };
+  </script>
+</body>
+</html>

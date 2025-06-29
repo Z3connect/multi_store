@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System Dashboard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 30px;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-size: 2.8em;
+      color: #1a252f;
+      margin-bottom: 5px;
+    }
+    header p {
+      font-size: 1.2em;
+      color: #555;
+    }
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+    }
+    .nav-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+      padding: 25px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .nav-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    .nav-card.primary {
+        grid-column: 1 / -1; /* Make this card span the full width */
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+    }
+    .nav-card.primary h2 {
+        font-size: 2em;
+    }
+    .nav-card.primary p {
+        color: #e0e0e0;
+        font-size: 1.1em;
+    }
+    .nav-card h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.5em;
+    }
+    .nav-card p {
+      margin: 0;
+      font-size: 0.95em;
+      line-height: 1.5;
+      flex-grow: 1; /* Pushes footer down */
+    }
+    .nav-card-footer {
+        margin-top: 20px;
+        font-weight: bold;
+        color: #007bff;
+    }
+    .nav-card.primary .nav-card-footer {
+        color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Store Management Dashboard</h1>
+      <p>Select a module to get started.</p>
+    </header>
+
+    <div class="nav-grid">
+      <!-- Primary Action: Billing Screen -->
+      <a href="billing-screen.html" class="nav-card primary">
+        <h2>🧾 Start Billing (POS)</h2>
+        <p>The main point-of-sale screen. Scan products, manage the cart, apply discounts, and generate bills for customers.</p>
+        <div class="nav-card-footer">Go to Billing →</div>
+      </a>
+
+      <!-- Product & Inventory -->
+      <a href="add-product.html" class="nav-card">
+        <h2>➕ Product Management</h2>
+        <p>Add new products, create variants (size, color), set prices, and edit existing product details.</p>
+        <div class="nav-card-footer">Manage Products →</div>
+      </a>
+      <a href="view-products.html" class="nav-card">
+        <h2>👕 Inventory View</h2>
+        <p>A comprehensive, filterable dashboard to view all product variants, their stock levels, and prices.</p>
+        <div class="nav-card-footer">View Inventory →</div>
+      </a>
+       <a href="barcode.html" class="nav-card">
+        <h2>║█║ Barcode Generator</h2>
+        <p>Generate and download printable barcode labels for all your product variants to streamline the checkout process.</p>
+        <div class="nav-card-footer">Create Barcodes →</div>
+      </a>
+      
+      <!-- Sales & Customer Management -->
+      <a href="bill-history.html" class="nav-card">
+        <h2>📜 Bill History & Returns</h2>
+        <p>Look up past transactions, view bill details, and process customer returns and refunds, which automatically restocks items.</p>
+        <div class="nav-card-footer">View History →</div>
+      </a>
+      <a href="analytics.html" class="nav-card">
+        <h2>📊 Sales Analytics</h2>
+        <p>Visualize your business performance with charts and key metrics on sales, profit, and payment methods. Download reports.</p>
+        <div class="nav-card-footer">View Analytics →</div>
+      </a>
+      <a href="crm.html" class="nav-card">
+        <h2>👥 Customer Hub (CRM)</h2>
+        <p>View detailed purchase history for each customer, identify top spenders, and send promotional offers via WhatsApp.</p>
+        <div class="nav-card-footer">Manage Customers →</div>
+      </a>
+
+      <!-- Settings -->
+      <a href="category.html" class="nav-card">
+        <h2>🗂️ Category Setup</h2>
+        <p>A simple utility to add new product categories (e.g., Shirts, Trousers, Accessories) for better organization.</p>
+        <div class="nav-card-footer">Manage Categories →</div>
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>

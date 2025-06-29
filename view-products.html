@@ -1,0 +1,148 @@
+<!-- START OF FILE view-products.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Inventory | POS</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; }
+    .controls { display: flex; gap: 15px; margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; }
+    .controls input, .controls select { padding: 10px; border-radius: 4px; border: 1px solid #ccc; width: 100%; }
+    .controls > div { flex: 1; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: middle; }
+    th { background-color: #343a40; color: white; }
+    .product-header-row { background-color: #e9ecef; font-weight: bold; }
+    .variant-row td:first-child { padding-left: 30px; }
+    .deactivated { color: #a9a9a9; text-decoration: line-through; }
+  </style>
+</head>
+<body>
+  <h1>👕 Product Inventory Dashboard</h1>
+  <p style="text-align:center; font-size:1.1em;"><a href="analytics.html">Go to Sales Analytics Dashboard</a></p>
+  <div class="controls">
+    <div>
+      <label for="searchInput">Search by Name, Brand, SKU...</label>
+      <input type="text" id="searchInput" onkeyup="renderProductTable()" placeholder="Search...">
+    </div>
+    <div>
+      <label for="categoryFilter">Filter by Category</label>
+      <select id="categoryFilter" onchange="renderProductTable()"></select>
+    </div>
+    <div>
+      <label for="statusFilter">Filter by Status</label>
+      <select id="statusFilter" onchange="renderProductTable()">
+        <option value="all">All Products</option>
+        <option value="active" selected>Active Only</option>
+        <option value="inactive">Inactive Only</option>
+      </select>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Product / Variant (Color/Size)</th>
+        <th>SKU</th>
+        <th>Buying Price (₹)</th>
+        <th>Selling Price (₹)</th>
+        <th>Stock</th>
+      </tr>
+    </thead>
+    <tbody id="productListTableBody"></tbody>
+  </table>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    let allProducts = []; // This will store all products from Firestore to enable fast client-side filtering
+
+    // Function to fetch all necessary data on page load
+    async function initializeDashboard() {
+        await loadCategories();
+        await loadAllProducts();
+    }
+
+    // Load categories into the filter dropdown
+    async function loadCategories() {
+        const categoryFilter = document.getElementById('categoryFilter');
+        categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+        const snapshot = await db.collection("categories").orderBy("name").get();
+        snapshot.forEach(doc => {
+            const option = document.createElement("option");
+            option.value = doc.id;
+            option.text = doc.data().name;
+            categoryFilter.add(option);
+        });
+    }
+
+    // Fetch all products from Firestore and store them locally
+    async function loadAllProducts() {
+        const tableBody = document.getElementById('productListTableBody');
+        tableBody.innerHTML = '<tr><td colspan="5">Fetching products...</td></tr>';
+        const snapshot = await db.collection("products").orderBy("name").get();
+        allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProductTable(); // Initial render
+    }
+    
+    // The core function to render the table based on current filters and search term
+    function renderProductTable() {
+        const tableBody = document.getElementById('productListTableBody');
+        tableBody.innerHTML = '';
+
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const categoryId = document.getElementById('categoryFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        // Apply filters and search
+        const filteredProducts = allProducts.filter(product => {
+            // Status filter
+            const statusMatch = (status === 'all') || (status === 'active' && product.isActive) || (status === 'inactive' && !product.isActive);
+            // Category filter
+            const categoryMatch = (categoryId === 'all') || (product.categoryId === categoryId);
+            // Search term filter
+            const searchMatch = !searchTerm ||
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.brand.toLowerCase().includes(searchTerm) ||
+                product.variants.some(v => v.sku.toLowerCase().includes(searchTerm));
+            
+            return statusMatch && categoryMatch && searchMatch;
+        });
+
+        if (filteredProducts.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No products match your criteria.</td></tr>';
+            return;
+        }
+
+        // Build table rows from filtered products
+        filteredProducts.forEach(product => {
+            const productRowClass = product.isActive ? '' : 'deactivated';
+            const headerRow = document.createElement('tr');
+            headerRow.className = 'product-header-row';
+            headerRow.innerHTML = `
+              <td colspan="5" class="${productRowClass}">
+                <b>${product.name}</b> <small>(${product.brand})</small> - <i>${product.categoryName}</i>
+              </td>
+            `;
+            tableBody.appendChild(headerRow);
+
+            product.variants.forEach(variant => {
+              const variantRow = document.createElement('tr');
+              variantRow.className = 'variant-row';
+              variantRow.innerHTML = `
+                <td class="${productRowClass}">${variant.color} / ${variant.size}</td>
+                <td class="${productRowClass}">${variant.sku}</td>
+                <td class="${productRowClass}">${product.buyingPrice.toFixed(2)}</td>
+                <td class="${productRowClass}">${variant.sellingPrice.toFixed(2)}</td>
+                <td class="${productRowClass}">${variant.stock}</td>
+              `;
+              tableBody.appendChild(variantRow);
+            });
+        });
+    }
+
+    window.onload = initializeDashboard;
+  </script>
+</body>
+</html>

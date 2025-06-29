@@ -1,0 +1,63 @@
+<!-- START OF FILE category.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Categories | POS</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input { padding: 8px; width: 300px; margin-right: 10px; }
+    button { padding: 8px 15px; }
+    ul { list-style-type: none; padding: 0; }
+    li { background: #f0f0f0; padding: 10px; margin-top: 5px; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h2>🗂️ Manage Categories</h2>
+
+  <input type="text" id="categoryName" placeholder="New category name (e.g., Shirts)">
+  <button onclick="addCategory()">Add Category</button>
+  <p id="status"></p>
+
+  <hr>
+  <h3>Existing Categories:</h3>
+  <ul id="categoryList"></ul>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    const categoryList = document.getElementById('categoryList');
+    const statusEl = document.getElementById('status');
+
+    // Function to add a new category
+    function addCategory() {
+      const name = document.getElementById('categoryName').value.trim();
+      if (!name) {
+        statusEl.innerText = "❌ Please enter a category name.";
+        return;
+      }
+      db.collection("categories").add({ name: name }).then(() => {
+        statusEl.innerText = `✅ Category "${name}" added!`;
+        document.getElementById('categoryName').value = '';
+        loadCategories(); // Refresh the list
+      }).catch(error => {
+        statusEl.innerText = "⚠️ Error: " + error.message;
+      });
+    }
+
+    // Function to load and display all categories
+    function loadCategories() {
+      db.collection("categories").orderBy("name").get().then(snapshot => {
+        categoryList.innerHTML = ""; // Clear old list
+        snapshot.forEach(doc => {
+          const category = doc.data();
+          categoryList.innerHTML += `<li>${category.name}</li>`;
+        });
+      });
+    }
+
+    // Load categories when the page opens
+    window.onload = loadCategories;
+  </script>
+</body>
+</html>

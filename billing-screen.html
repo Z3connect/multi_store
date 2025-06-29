@@ -1,0 +1,105 @@
+<!-- START OF FILE billing-screen.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>POS Billing Screen</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; gap: 30px; padding: 20px; }
+    .left-panel, .right-panel { flex: 1; display: flex; flex-direction: column; }
+    .section { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    h2, h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    button { padding: 12px 20px; font-size: 1em; border-radius: 5px; border: none; cursor: pointer; color: white; }
+    .start-btn { background-color: #28a745; }
+    .stop-btn { background-color: #dc3545; }
+    .bill-btn { background-color: #007bff; width: 100%; font-size: 1.2em; margin-top: 20px; }
+    #reader { width: 100%; border: 1px solid #ccc; border-radius: 5px; }
+    input[type="text"], input[type="number"], select { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    
+    /* Cart Styles */
+    #cartList { list-style-type: none; padding: 0; }
+    .cart-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .cart-item-name { flex-grow: 1; }
+    .cart-item-qty { display: flex; align-items: center; }
+    .cart-item-qty button { font-weight: bold; padding: 5px 10px; font-size: 1em; line-height: 1; background-color: #e9ecef; color: #333; }
+    .cart-item-qty input { width: 50px; text-align: center; margin: 0 5px; }
+    .cart-item-price { min-width: 80px; text-align: right; font-weight: bold; }
+
+    /* NEW STYLES for Totals and Payment */
+    .totals-grid { display: grid; grid-template-columns: 1fr auto; gap: 5px 15px; margin-top: 15px; }
+    .totals-grid span { font-weight: bold; }
+    #grandTotal { font-size: 1.5em; color: #28a745; }
+    .discount-section { display: flex; gap: 10px; align-items: center; margin-top: 15px; }
+    .discount-section input { flex-grow: 1; }
+    .discount-section select { width: 70px; flex-grow: 0; }
+    .payment-methods label { margin-right: 15px; }
+  </style>
+</head>
+<body>
+
+  <div class="left-panel">
+    <!-- Scanner and Manual Entry Sections unchanged -->
+    <div class="section">
+      <h2>📷 Scan Barcode</h2>
+      <div id="reader"></div>
+      <button class="start-btn" onclick="startScanner()">Start Camera</button>
+      <button class="stop-btn" onclick="stopScanner()">Stop Camera</button>
+      <p id="scanResult"></p>
+    </div>
+    <div class="section">
+      <h3>Manual Entry</h3>
+      <select id="productSelect"></select>
+      <label for="quantity">Quantity:</label>
+      <input type="number" id="quantity" value="1" min="1">
+      <button onclick="addToCartManual()" style="background-color:#17a2b8; width:100%;">➕ Add to Cart Manually</button>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="section">
+      <h2>🧾 Cart</h2>
+      <ul id="cartList"><li>Cart is empty.</li></ul>
+      <hr>
+      <!-- NEW TOTALS SECTION -->
+      <div class="totals-grid">
+        <label>Subtotal:</label> <span id="subtotalAmount">₹0.00</span>
+        <label>Discount:</label> <span id="discountAmount">₹0.00</span>
+        <hr style="grid-column: 1 / -1; border-top: 1px dashed #ccc; margin: 5px 0;">
+        <label>Grand Total:</label> <span id="grandTotal">₹0.00</span>
+      </div>
+    </div>
+    <div class="section">
+      <h2>💳 Payment & Details</h2>
+      
+      <label for="discountValue">Discount</label>
+      <div class="discount-section">
+        <input type="number" id="discountValue" placeholder="e.g., 10 or 50" min="0" oninput="updateCartUI()">
+        <select id="discountType" onchange="updateCartUI()">
+          <option value="percent">%</option>
+          <option value="amount">₹</option>
+        </select>
+      </div>
+      
+      <label>Payment Method</label>
+      <div class="payment-methods">
+        <input type="radio" id="payCash" name="paymentMethod" value="Cash" checked>
+        <label for="payCash">Cash</label>
+        <input type="radio" id="payGpay" name="paymentMethod" value="GPay">
+        <label for="payGpay">GPay</label>
+      </div>
+      <input type="hidden" id="originBillId">
+      <label for="customerName">Customer Name</label>
+      <input type="text" id="customerName" placeholder="Customer Name">
+      <label for="whatsappNumber">WhatsApp Number</label>
+      <input type="number" id="whatsappNumber" placeholder="e.g., 919876543210">
+      
+      <button class="bill-btn" onclick="generateAndSendBill()">✅ Generate & Send Bill</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

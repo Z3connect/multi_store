@@ -1,0 +1,455 @@
+<!-- START OF FILE crm.html (FINAL VERSION) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Management (CRM) | POS</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f8f9fa; margin: 0; }
+    .crm-container { display: flex; height: 100vh; }
+    
+    /* --- Left Panel: Customer List --- */
+    .customer-list-panel {
+      width: 350px;
+      flex-shrink: 0;
+      background: #fff;
+      border-right: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+    }
+    .list-header { padding: 15px; border-bottom: 1px solid #e0e0e0; }
+    .list-header h2 { margin: 0; font-size: 1.5em; }
+    .list-header input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+    
+    #customer-list {
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .customer-card {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .customer-card:hover { background-color: #f0f5ff; }
+    .customer-card.active { background-color: #007bff; color: white; }
+    .customer-card.active small { color: #e0e0e0; }
+    .customer-card h4 { margin: 0 0 5px 0; }
+    .customer-card p { margin: 0; font-size: 0.9em; }
+    .customer-card small { color: #666; }
+
+    /* --- Styles for Top Customers --- */
+    .top-customers-section {
+        padding: 15px;
+        border-bottom: 2px solid #007bff;
+        background-color: #f0f5ff;
+    }
+    .top-customers-section h4 {
+        margin: 0 0 10px 0;
+        color: #0056b3;
+    }
+    #top-customer-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .top-customer-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #007bff;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .top-customer-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .top-customer-card .info h5 { margin: 0; }
+    .top-customer-card .info p { margin: 0; font-size: 0.8em; color: #555; }
+    .top-customer-card .amount { font-weight: bold; color: #28a745; }
+
+    /* --- Right Panel: Customer Details --- */
+    .customer-detail-panel {
+      flex-grow: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+    #placeholder-message { text-align: center; color: #888; font-size: 1.2em; margin-top: 50px; }
+    #customer-detail-view { display: none; }
+    .detail-header { border-bottom: 2px solid #007bff; padding-bottom: 15px; margin-bottom: 20px; }
+    .detail-header h3 { margin: 0; font-size: 2em; }
+    .detail-stats { display: flex; gap: 30px; margin-top: 10px; }
+
+    /* Timeline / Accordion for Bills */
+    .bill-accordion {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      background: #fff;
+    }
+    .bill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background-color: #f7f7f7;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .bill-header .indicator { font-size: 1.5em; transition: transform 0.2s; }
+    .bill-items-container {
+      padding: 0 15px 15px 15px;
+      display: none; /* Hidden by default */
+      border-top: 1px solid #ddd;
+    }
+    .bill-items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .bill-items-table th, .bill-items-table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+    .bill-items-table th { font-size: 0.9em; color: #555; }
+
+    /* --- Styles for Modal and Offer Button --- */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+    .modal-header h3 { margin: 0; }
+    .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+    .close-btn:hover { color: black; }
+    .modal-body { padding: 20px 0; }
+    .modal-body textarea { width: 100%; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 5px; }
+    .modal-footer { text-align: right; }
+    #send-whatsapp-btn { background-color: #25D366; color: white; padding: 12px 20px; border:none; border-radius: 5px; cursor:pointer;}
+
+    .send-offer-btn {
+        background-color: #17a2b8;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    .send-offer-btn:hover { background-color: #138496; }
+  </style>
+</head>
+<body>
+
+<div class="crm-container">
+  <!-- LEFT PANEL - CUSTOMER LIST -->
+  <div class="customer-list-panel">
+    <div class="list-header">
+      <h2>Customers</h2>
+      <input type="text" id="searchInput" onkeyup="renderCustomerList()" placeholder="Search by name or phone...">
+    </div>
+    
+    <!-- TOP CUSTOMERS SECTION -->
+    <div class="top-customers-section">
+        <h4>⭐ Top Customers</h4>
+        <div id="top-customer-list"></div>
+    </div>
+
+    <div id="customer-list">
+      <p style="text-align: center; padding: 20px;">Loading customers...</p>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL - CUSTOMER DETAILS -->
+  <div class="customer-detail-panel">
+    <div id="placeholder-message">
+      <p>← Select a customer from the list to view their purchase history.</p>
+      <p><a href="billing-screen.html">Go to Billing</a> | <a href="analytics.html">Go to Analytics</a></p>
+    </div>
+    
+    <div id="customer-detail-view">
+      <div class="detail-header">
+        <h3 id="detail-customer-name"></h3>
+        <p id="detail-customer-phone"></p>
+        <div class="detail-stats">
+          <div><strong>Total Spent:</strong> <span id="detail-total-spent"></span></div>
+          <div><strong>Total Purchases:</strong> <span id="detail-total-purchases"></span></div>
+          <div><strong>Last Purchase:</strong> <span id="detail-last-purchase"></span></div>
+        </div>
+        <button class="send-offer-btn" onclick="openMessageModal()">Send Offer</button>
+      </div>
+      <h4>Purchase Timeline</h4>
+      <div id="bill-history-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGING MODAL -->
+<div id="messageModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Send Promotional Message</h3>
+      <span class="close-btn" onclick="closeMessageModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <p>To: <b id="modal-customer-name"></b></p>
+      <label for="messageText">Message Content:</label>
+      <textarea id="messageText" rows="8"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button id="send-whatsapp-btn" onclick="sendWhatsAppMessage()">Send via WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  let customerDataMap = new Map();
+
+  async function initializeCRM() {
+    const snapshot = await db.collection("bills").orderBy("date", "desc").get();
+    
+    snapshot.forEach(doc => {
+      const bill = { id: doc.id, ...doc.data() };
+      if (!bill.whatsappNumber) return;
+
+      if (!customerDataMap.has(bill.whatsappNumber)) {
+        customerDataMap.set(bill.whatsappNumber, {
+          customerName: bill.customerName,
+          whatsappNumber: bill.whatsappNumber,
+          totalSpent: bill.netTotal || bill.grandTotal || 0,
+          totalPurchases: 1,
+          lastPurchaseDate: bill.date.toDate(),
+          bills: [bill]
+        });
+      } else {
+        const existingData = customerDataMap.get(bill.whatsappNumber);
+        existingData.totalSpent += bill.netTotal || bill.grandTotal || 0;
+        existingData.totalPurchases++;
+        existingData.bills.push(bill);
+      }
+    });
+
+    renderCustomerList();
+  }
+
+  function renderCustomerList() {
+    const listContainer = document.getElementById('customer-list');
+    const topListContainer = document.getElementById('top-customer-list');
+    listContainer.innerHTML = '';
+    topListContainer.innerHTML = '';
+
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const customers = Array.from(customerDataMap.values());
+    
+    // Identify and render top customers
+    const sortedBySpending = [...customers].sort((a, b) => b.totalSpent - a.totalSpent);
+    const topCustomers = sortedBySpending.slice(0, 3);
+
+    topCustomers.forEach(customer => {
+        const card = document.createElement('div');
+        card.className = 'top-customer-card';
+        card.setAttribute('onclick', `showCustomerDetails('${customer.whatsappNumber}')`);
+        card.innerHTML = `
+            <div class="info">
+                <h5>${customer.customerName}</h5>
+                <p>${customer.whatsappNumber}</p>
+            </div>
+            <span class="amount">₹${Math.round(customer.totalSpent)}</span>
+        `;
+        topListContainer.appendChild(card);
+    });
+
+    // Render the main, filterable list
+    const sortedByDate = customers.sort((a, b) => b.lastPurchaseDate - a.lastPurchaseDate);
+    const filteredCustomers = sortedByDate.filter(c => 
+        c.customerName.toLowerCase().includes(searchTerm) || 
+        c.whatsappNumber.includes(searchTerm)
+    );
+
+    if (filteredCustomers.length === 0) {
+      listContainer.innerHTML = `<p style="text-align: center; padding: 20px;">No customers found.</p>`;
+    } else {
+      filteredCustomers.forEach(customer => {
+        const card = document.createElement('div');
+        card.className = 'customer-card';
+        card.id = `customer-${customer.whatsappNumber}`;
+        card.setAttribute('onclick', `showCustomerDetails('${customer.whatsappNumber}')`);
+        card.innerHTML = `
+          <h4>${customer.customerName}</h4>
+          <p>${customer.whatsappNumber}</p>
+          <small>Last seen: ${customer.lastPurchaseDate.toLocaleDateString()}</small>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+  }
+
+  function showCustomerDetails(whatsappNumber) {
+    document.getElementById('placeholder-message').style.display = 'none';
+    document.getElementById('customer-detail-view').style.display = 'block';
+
+    document.querySelectorAll('.customer-card').forEach(c => c.classList.remove('active'));
+    // The top customer card doesn't have an ID, so we query the main list only.
+    const mainListCard = document.getElementById(`customer-${whatsappNumber}`);
+    if (mainListCard) mainListCard.classList.add('active');
+
+
+    const customer = customerDataMap.get(whatsappNumber);
+    if (!customer) return;
+
+    document.getElementById('detail-customer-name').innerText = customer.customerName;
+    document.getElementById('detail-customer-phone').innerText = customer.whatsappNumber;
+    document.getElementById('detail-total-spent').innerText = `₹${customer.totalSpent.toFixed(2)}`;
+    document.getElementById('detail-total-purchases').innerText = customer.totalPurchases;
+    document.getElementById('detail-last-purchase').innerText = customer.lastPurchaseDate.toLocaleString();
+    
+    const historyContainer = document.getElementById('bill-history-container');
+    historyContainer.innerHTML = '';
+    
+    customer.bills.forEach(bill => {
+      const accordion = document.createElement('div');
+      accordion.className = 'bill-accordion';
+      let itemsTable = `<table class="bill-items-table"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>`;
+      bill.items.forEach(item => {
+        itemsTable += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>₹${item.price.toFixed(2)}</td><td>₹${(item.quantity * item.price).toFixed(2)}</td></tr>`;
+      });
+      itemsTable += '</tbody></table>';
+
+      accordion.innerHTML = `
+        <div class="bill-header" onclick="toggleAccordion(this)">
+          <div><span>Bill #${bill.billId}</span> | <small>${bill.date.toDate().toLocaleDateString()}</small></div>
+          <div><span>Total: ₹${bill.grandTotal.toFixed(2)}</span><span class="indicator">+</span></div>
+        </div>
+        <div class="bill-items-container">${itemsTable}</div>
+      `;
+      historyContainer.appendChild(accordion);
+    });
+  }
+  
+  function toggleAccordion(headerElement) {
+    const itemsContainer = headerElement.nextElementSibling;
+    const indicator = headerElement.querySelector('.indicator');
+    
+    if (itemsContainer.style.display === "block") {
+      itemsContainer.style.display = "none";
+      indicator.textContent = "+";
+      indicator.style.transform = "rotate(0deg)";
+    } else {
+      itemsContainer.style.display = "block";
+      indicator.textContent = "−";
+      indicator.style.transform = "rotate(180deg)";
+    }
+  }
+
+  // --- FUNCTIONS FOR THE MESSAGING MODAL ---
+  let currentCustomerForMessage = null;
+
+  function openMessageModal() {
+    // The active customer is stored in a global variable when their details are shown
+    if (!currentCustomerForMessage) {
+        // Fallback in case the global var is not set, find active card
+        const activeCard = document.querySelector('.customer-card.active');
+        if (!activeCard) { alert("Please select a customer first."); return; }
+        const whatsappNumber = activeCard.id.split('-')[1];
+        currentCustomerForMessage = customerDataMap.get(whatsappNumber);
+    }
+    
+    if (!currentCustomerForMessage) return;
+
+    const customerFirstName = currentCustomerForMessage.customerName.split(' ')[0];
+    const messageTemplate = `Hi ${customerFirstName}!\n\nAs one of our valued customers, we're excited to offer you a special 50% discount on your next purchase! ✨\n\nJust show this message at the counter to redeem your offer.\n\nThank you for your loyalty,\n[Your Store Name]`;
+    
+    document.getElementById('modal-customer-name').innerText = currentCustomerForMessage.customerName;
+    document.getElementById('messageText').value = messageTemplate;
+    document.getElementById('messageModal').style.display = "block";
+  }
+
+  // Added a small fix to showCustomerDetails to set the current customer for the modal
+  function showCustomerDetails(whatsappNumber) {
+      document.getElementById('placeholder-message').style.display = 'none';
+      document.getElementById('customer-detail-view').style.display = 'block';
+
+      document.querySelectorAll('.customer-card, .top-customer-card').forEach(c => c.classList.remove('active'));
+      const mainListCard = document.getElementById(`customer-${whatsappNumber}`);
+      if (mainListCard) mainListCard.classList.add('active');
+
+      const customer = customerDataMap.get(whatsappNumber);
+      if (!customer) return;
+
+      currentCustomerForMessage = customer; // *** IMPORTANT FIX/ADDITION ***
+
+      document.getElementById('detail-customer-name').innerText = customer.customerName;
+      document.getElementById('detail-customer-phone').innerText = customer.whatsappNumber;
+      document.getElementById('detail-total-spent').innerText = `₹${customer.totalSpent.toFixed(2)}`;
+      document.getElementById('detail-total-purchases').innerText = customer.totalPurchases;
+      document.getElementById('detail-last-purchase').innerText = customer.lastPurchaseDate.toLocaleString();
+      
+      const historyContainer = document.getElementById('bill-history-container');
+      historyContainer.innerHTML = '';
+      
+      customer.bills.forEach(bill => {
+          const accordion = document.createElement('div');
+          accordion.className = 'bill-accordion';
+          let itemsTable = `<table class="bill-items-table"><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>`;
+          (bill.items || []).forEach(item => { // Added || [] for safety
+              itemsTable += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>₹${(item.price || 0).toFixed(2)}</td><td>₹${((item.quantity || 0) * (item.price || 0)).toFixed(2)}</td></tr>`;
+          });
+          itemsTable += '</tbody></table>';
+
+          accordion.innerHTML = `
+            <div class="bill-header" onclick="toggleAccordion(this)">
+              <div><span>Bill #${bill.billId}</span> | <small>${bill.date.toDate().toLocaleDateString()}</small></div>
+              <div><span>Total: ₹${(bill.grandTotal || 0).toFixed(2)}</span><span class="indicator">+</span></div>
+            </div>
+            <div class="bill-items-container">${itemsTable}</div>
+          `;
+          historyContainer.appendChild(accordion);
+      });
+  }
+
+  function closeMessageModal() {
+    document.getElementById('messageModal').style.display = "none";
+    // We keep currentCustomerForMessage set until a new customer is selected.
+  }
+
+  function sendWhatsAppMessage() {
+    if (!currentCustomerForMessage) return;
+    const message = document.getElementById('messageText').value;
+    const whatsappNumber = currentCustomerForMessage.whatsappNumber;
+    if (!message) { alert("Message cannot be empty."); return; }
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    closeMessageModal();
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('messageModal');
+    if (event.target == modal) {
+      closeMessageModal();
+    }
+  }
+
+  window.onload = initializeCRM;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!-- START OF FILE bill-history.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bill History & Returns | POS</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; background-color: #f8f9fa; }
+    h1 { text-align: center; color: #333; }
+    .nav-links { text-align: center; margin-bottom: 20px; font-size: 1.1em; }
+    .controls { display: flex; gap: 20px; align-items: flex-end; margin-bottom: 20px; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .controls > div { flex: 1; }
+    .controls label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+    .controls input, .controls button { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    .controls button { background-color: #6c757d; color: white; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; background-color: #fff; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #343a40; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .action-btn { padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .return-btn { background-color: #ffc107; color: black; }
+
+    /* NEW STYLE for highlighting returned bills */
+    .returned-bill-row {
+      background-color: #fff0f0 !important; /* A light red to indicate a return */
+    }
+
+    /* MODAL STYLES */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+    .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 700px; border-radius: 8px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+    .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+    #return-items-list { max-height: 250px; overflow-y: auto; margin-top: 15px; }
+    .return-item { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+    .return-item input { padding: 5px; width: 100%; text-align: center; }
+    .refund-section { margin-top: 20px; padding-top: 20px; border-top: 2px solid #343a40; }
+    .refund-section .refund-line { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .refund-section input { text-align: right; }
+    .modal-footer { text-align: right; margin-top: 20px; }
+    #process-return-btn { background-color: #28a745; }
+  </style>
+</head>
+<body>
+  <h1>📜 Bill History & Returns</h1>
+  <div class="nav-links">
+    <a href="billing-screen.html">Go to Billing</a>
+  </div>
+
+  <div class="controls">
+    <div>
+      <label for="searchInput">Search by Bill ID or Customer Name</label>
+      <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="e.g., 1001 or John Doe">
+    </div>
+    <div>
+      <label for="startDateFilter">Start Date</label>
+      <input type="date" id="startDateFilter" onchange="renderTable()">
+    </div>
+    <div>
+      <label for="endDateFilter">End Date</label>
+      <input type="date" id="endDateFilter" onchange="renderTable()">
+    </div>
+    <div>
+      <button onclick="clearFilters()">Clear Filters</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Bill ID</th>
+        <th>Date</th>
+        <th>Customer</th>
+        <th>Grand Total (₹)</th>
+        <th>Total Refunded (₹)</th>
+        <th>Net Total (₹)</th>
+        <th>Payment</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="billHistoryTableBody"></tbody>
+  </table>
+
+  <!-- RETURN MODAL HTML is unchanged -->
+  <div id="returnModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Process Return</h2>
+        <span class="close-btn" onclick="closeReturnModal()">×</span>
+      </div>
+      <div class="return-item" style="font-weight: bold;">
+        <span>Product</span><span>Original Qty</span><span>Returned</span><span>Return Qty</span>
+      </div>
+      <div id="return-items-list"></div>
+      <div class="refund-section">
+        <h3>Refund Calculation</h3>
+        <div class="refund-line">
+          <label>Calculated Refund:</label>
+          <span id="calculatedRefund">₹0.00</span>
+        </div>
+        <div class="refund-line">
+          <label for="finalRefundAmount"><b>Final Refund Amount (₹):</b></label>
+          <input type="number" id="finalRefundAmount" style="width: 150px;">
+        </div>
+        <div class="refund-line">
+          <label for="returnReason">Return Reason (Optional):</label>
+          <input type="text" id="returnReason" placeholder="e.g., Damaged item">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="process-return-btn" class="action-btn" onclick="processReturn()">Process Return & Issue Refund</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    let allBills = [];
+    let currentBillForReturn = null;
+
+    // --- MAIN DATA LOADING AND TABLE RENDERING ---
+    async function loadBillHistory() {
+      const tableBody = document.getElementById('billHistoryTableBody');
+      tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading history...</td></tr>';
+      const snapshot = await db.collection("bills").orderBy("billId", "desc").get();
+      allBills = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+      renderTable();
+    }
+    
+    function renderTable() {
+      const tableBody = document.getElementById('billHistoryTableBody');
+      tableBody.innerHTML = '';
+      const filteredBills = filterBills();
+      
+      if (filteredBills.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No bills match your criteria.</td></tr>';
+        return;
+      }
+
+      filteredBills.forEach(bill => {
+        const row = document.createElement('tr');
+        
+        // --- NEW LOGIC TO HIGHLIGHT RETURNED BILLS ---
+        const hasReturns = bill.totalRefundedAmount && bill.totalRefundedAmount > 0;
+        if (hasReturns) {
+          row.className = 'returned-bill-row';
+        }
+
+        const totalRefunded = bill.totalRefundedAmount || 0;
+        const netTotal = bill.netTotal !== undefined ? bill.netTotal : bill.grandTotal;
+        const discountApplied = (bill.discount && bill.discount.applied) ? bill.discount.applied.toFixed(2) : '0.00';
+        
+        row.innerHTML = `
+          <td>${bill.billId}</td>
+          <td>${bill.date.toDate().toLocaleString()}</td>
+          <td>${bill.customerName}</td>
+          <td>${bill.grandTotal.toFixed(2)}</td>
+          <td>${totalRefunded.toFixed(2)}</td>
+          <td><b>${netTotal.toFixed(2)}</b></td>
+          <td>${bill.paymentMethod}</td>
+          <td><button class="action-btn return-btn" onclick="openReturnModal('${bill.docId}')">View / Return</button></td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+    
+    function filterBills() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const startDate = document.getElementById('startDateFilter').value;
+      const endDate = document.getElementById('endDateFilter').value;
+      
+      return allBills.filter(bill => {
+        const searchMatch = !searchTerm || bill.billId.toString().includes(searchTerm) || bill.customerName.toLowerCase().includes(searchTerm);
+        const billDate = bill.date.toDate();
+        const startMatch = !startDate || billDate >= new Date(startDate);
+        const endMatch = !endDate || billDate <= new Date(new Date(endDate).setHours(23, 59, 59, 999));
+        return searchMatch && startMatch && endMatch;
+      });
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('startDateFilter').value = '';
+      document.getElementById('endDateFilter').value = '';
+      renderTable();
+    }
+
+    // --- MODAL AND RETURN LOGIC ---
+    function openReturnModal(docId) {
+      currentBillForReturn = allBills.find(b => b.docId === docId);
+      if (!currentBillForReturn) return;
+      const modal = document.getElementById('returnModal');
+      const title = document.getElementById('modal-title');
+      const itemsList = document.getElementById('return-items-list');
+      title.innerText = `Return for Bill #${currentBillForReturn.billId}`;
+      itemsList.innerHTML = '';
+      currentBillForReturn.items.forEach((item, index) => {
+        const returnedQty = item.returnedQty || 0;
+        const maxReturnable = item.quantity - returnedQty;
+        itemsList.innerHTML += `<div class="return-item"><span>${item.name}</span><span>${item.quantity}</span><span>${returnedQty}</span><div><input type="number" id="return-qty-${index}" min="0" max="${maxReturnable}" value="0" oninput="updateRefundCalculation()" ${maxReturnable === 0 ? 'disabled' : ''}></div></div>`;
+      });
+      updateRefundCalculation();
+      document.getElementById('returnReason').value = '';
+      modal.style.display = 'block';
+    }
+
+    function closeReturnModal() {
+      document.getElementById('returnModal').style.display = 'none';
+      currentBillForReturn = null;
+    }
+    
+    function updateRefundCalculation() {
+      if (!currentBillForReturn) return;
+      let calculatedAmount = 0;
+      currentBillForReturn.items.forEach((item, index) => {
+        const input = document.getElementById(`return-qty-${index}`);
+        const returnQty = parseInt(input.value, 10) || 0;
+        calculatedAmount += returnQty * item.price;
+      });
+      document.getElementById('calculatedRefund').innerText = `₹${calculatedAmount.toFixed(2)}`;
+      document.getElementById('finalRefundAmount').value = calculatedAmount.toFixed(2);
+    }
+
+    async function processReturn() {
+      if (!currentBillForReturn) return;
+      const finalRefundAmount = parseFloat(document.getElementById('finalRefundAmount').value);
+      const returnReason = document.getElementById('returnReason').value.trim();
+      if (isNaN(finalRefundAmount) || finalRefundAmount < 0) {
+        alert("Please enter a valid final refund amount."); return;
+      }
+      const returnsToProcess = currentBillForReturn.items.map((item, index) => ({
+        ...item,
+        returnQty: parseInt(document.getElementById(`return-qty-${index}`).value, 10) || 0,
+        itemIndex: index
+      })).filter(r => r.returnQty > 0);
+      if (returnsToProcess.length === 0) {
+        alert("No items selected for return."); return;
+      }
+
+      const billRef = db.collection("bills").doc(currentBillForReturn.docId);
+      try {
+        await db.runTransaction(async (transaction) => {
+          const billDoc = await transaction.get(billRef);
+          if (!billDoc.exists) throw "Bill not found!";
+          
+          let billData = billDoc.data();
+          let updatedItems = billData.items;
+          let existingReturns = billData.returns || [];
+
+          for (const ret of returnsToProcess) {
+            const productRef = db.collection("products").doc(ret.productId);
+            const productDoc = await transaction.get(productRef);
+            if (!productDoc.exists) throw `Product ID ${ret.productId} not found!`;
+            let productData = productDoc.data();
+            const variantIndex = productData.variants.findIndex(v => v.sku === ret.sku);
+            if (variantIndex === -1) throw `Variant ${ret.sku} not found!`;
+            productData.variants[variantIndex].stock += ret.returnQty;
+            transaction.update(productRef, { variants: productData.variants });
+            const currentReturned = updatedItems[ret.itemIndex].returnedQty || 0;
+            updatedItems[ret.itemIndex].returnedQty = currentReturned + ret.returnQty;
+          }
+          
+          const currentTotalRefunded = billData.totalRefundedAmount || 0;
+          const newTotalRefunded = currentTotalRefunded + finalRefundAmount;
+          const newNetTotal = billData.grandTotal - newTotalRefunded;
+          
+          const newReturnRecord = {
+            date: new Date(),
+            refundedAmount: finalRefundAmount,
+            reason: returnReason,
+            items: returnsToProcess.map(r => ({ sku: r.sku, name: r.name, returnedQty: r.returnQty }))
+          };
+          existingReturns.push(newReturnRecord);
+
+          transaction.update(billRef, {
+            items: updatedItems,
+            returns: existingReturns,
+            totalRefundedAmount: newTotalRefunded,
+            netTotal: newNetTotal
+          });
+        });
+        
+        alert(`✅ Return processed for ₹${finalRefundAmount.toFixed(2)} and bill updated successfully!`);
+        closeReturnModal();
+        loadBillHistory();
+        
+      } catch (error) {
+        console.error("Return failed:", error);
+        alert("❌ Error processing return. Transaction failed. Reason: " + error);
+      }
+    }
+    
+    window.onload = loadBillHistory;
+  </script>
+</body>
+</html>
