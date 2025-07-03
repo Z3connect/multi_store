@@ -1,0 +1,159 @@
+<!-- START OF FILE barcode.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Barcode Generator | POS</title>
+  <!-- Library 1: JsBarcode for generating the barcode SVG -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- Library 2: html2canvas for converting the card to a PNG image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+    h1 { text-align: center; color: #333; }
+    .controls { display: flex; justify-content: center; margin-bottom: 25px; }
+    #searchInput { width: 50%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 5px; }
+    #barcode-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .barcode-card {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .barcode-card h4 { margin: 0 0 5px 0; font-size: 1.2em; }
+    .barcode-card p { margin: 5px 0; color: #555; }
+    /* Style for the price to make it stand out */
+    .price {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #000;
+      margin: 15px 0;
+    }
+    .barcode-card svg { width: 100%; height: auto; margin-top: 10px; }
+    .download-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin-top: 15px;
+      cursor: pointer;
+      border-radius: 4px;
+      width: 100%;
+      font-size: 1em;
+    }
+    .download-btn:hover { background-color: #218838; }
+  </style>
+</head>
+<body>
+  <h1>Barcode Generator</h1>
+  <p style="text-align:center;"><a href="add-product.html">Manage Products</a> | <a href="view-products.html">View Inventory</a></p>
+  
+  <div class="controls">
+    <input type="text" id="searchInput" onkeyup="renderBarcodes()" placeholder="Search by Product Name, Brand, or SKU...">
+  </div>
+
+  <div id="barcode-container">
+    <!-- Barcode cards will be generated here -->
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    let allProducts = [];
+
+    async function loadAllProducts() {
+      const container = document.getElementById('barcode-container');
+      container.innerHTML = '<p>Loading products...</p>';
+      const snapshot = await db.collection("products").where("isActive", "==", true).get();
+      allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderBarcodes();
+    }
+    
+    function renderBarcodes() {
+      const container = document.getElementById('barcode-container');
+      container.innerHTML = '';
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      let itemsFound = false;
+
+      allProducts.forEach(product => {
+        product.variants.forEach(variant => {
+          const searchCorpus = `${product.name} ${product.brand} ${variant.sku}`.toLowerCase();
+          if (searchCorpus.includes(searchTerm)) {
+            itemsFound = true;
+            
+            // Give both the card and the svg unique IDs
+            const cardId = `card-${variant.sku}`;
+            const svgId = `barcode-${variant.sku}`;
+
+            const card = document.createElement('div');
+            card.className = 'barcode-card';
+            card.id = cardId; // Set the ID on the card itself
+
+            card.innerHTML = `
+                <h4>${product.name}</h4>
+                <p>${variant.color}, ${variant.size}</p>
+                <p class="price">Price: ₹${variant.sellingPrice.toFixed(2)}</p>
+                <svg id="${svgId}"></svg>
+                <button class="download-btn" onclick="downloadBarcodeAsPNG('${cardId}', '${variant.sku}')">Download as PNG</button>
+            `;
+            container.appendChild(card);
+            
+            try {
+              JsBarcode(`#${svgId}`, variant.sku, {
+                format: "CODE128",
+                lineColor: "#000",
+                width: 2,
+                height: 60,
+                displayValue: true
+              });
+            } catch (e) {
+              console.error("Could not generate barcode for SKU:", variant.sku, e);
+              const errorElement = document.getElementById(svgId);
+              if (errorElement) { errorElement.outerHTML = `<p style="color:red;">Error generating barcode.</p>`; }
+            }
+          }
+        });
+      });
+      if (!itemsFound) {
+        container.innerHTML = '<p>No products match your search.</p>';
+      }
+    }
+    
+    // --- NEW FUNCTION TO DOWNLOAD THE ENTIRE CARD AS A PNG ---
+    function downloadBarcodeAsPNG(cardId, filename) {
+        const cardElement = document.getElementById(cardId);
+        if (!cardElement) {
+            console.error("Card element not found:", cardId);
+            return;
+        }
+
+        // Use html2canvas to take a "screenshot" of the card element
+        html2canvas(cardElement, {
+            scale: 2 // Render at a higher resolution for better print quality
+        }).then(canvas => {
+            // The 'canvas' object is the generated image
+            const dataUrl = canvas.toDataURL("image/png");
+
+            // Create a temporary link to trigger the download
+            const downloadLink = document.createElement("a");
+            downloadLink.href = dataUrl;
+            downloadLink.download = `${filename}.png`; // Set filename with .png extension
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+    }
+
+    window.onload = loadAllProducts;
+  </script>
+</body>
+</html>

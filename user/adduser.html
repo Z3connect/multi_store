@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User | Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --danger-color: #f44336;
+            --success-color: #4caf50;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            font-size: 1rem;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--border-radius);
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #status { margin-top: 20px; font-weight: 500; text-align: center; }
+        #status.success { color: var(--success-color); }
+        #status.error { color: var(--danger-color); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-user-plus"></i> Add New User</h1>
+        <a href="index.html" class="back-link">← Back to Dashboard</a>
+
+        <form id="addUserForm" onsubmit="createUser(event)">
+            <div class="form-group">
+                <label for="fullName" class="form-label">Full Name</label>
+                <input type="text" id="fullName" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label for="userRole" class="form-label">Role</label>
+                <select id="userRole" class="form-control" required>
+                    <option value="">-- Select a Role --</option>
+                    <option value="Admin">Administrator</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Cashier">Cashier</option>
+                </select>
+            </div>
+            <button type="submit" id="addUserBtn" class="btn">Create User</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script>
+        const addUserForm = document.getElementById('addUserForm');
+        const statusEl = document.getElementById('status');
+
+        // IMPORTANT: In a real app, protect this page.
+        // This function is a placeholder for real security checks.
+        function checkAdminStatus() {
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    // Normally, you would check the user's role from Firestore here.
+                    // For now, we'll just log that the check should happen.
+                    console.log("Admin check: User is logged in. Need to verify role.");
+                } else {
+                    // If no user is logged in, redirect them to the login page.
+                    console.log("Admin check: No user logged in. Redirecting.");
+                    // window.location.href = 'user-login.html';
+                }
+            });
+        }
+        
+        window.onload = checkAdminStatus;
+
+        function createUser(event) {
+            event.preventDefault();
+
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('userRole').value;
+            
+            statusEl.textContent = 'Creating user...';
+            statusEl.className = '';
+
+            // Step 1: Create the user in Firebase Authentication
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    console.log('User created in Auth:', user.uid);
+
+                    // Step 2: Store user's role and name in Firestore
+                    // The document ID in Firestore will be the same as the user's UID in Auth
+                    return db.collection("users").doc(user.uid).set({
+                        name: fullName,
+                        email: email,
+                        role: role,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    statusEl.textContent = '✅ User created successfully!';
+                    statusEl.className = 'success';
+                    addUserForm.reset();
+                })
+                .catch((error) => {
+                    statusEl.textContent = `❌ Error: ${error.message}`;
+                    statusEl.className = 'error';
+                });
+        }
+    </script>
+</body>
+</html>

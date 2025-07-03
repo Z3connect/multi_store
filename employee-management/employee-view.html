@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Analytics | POS</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Base styles (mobile-first) */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      padding: 10px; 
+      background-color: #f4f7f6; 
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    
+    .container { 
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    h1 { 
+      text-align: center; 
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    
+    .controls { 
+      margin-bottom: 20px; 
+    }
+    
+    .controls label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    
+    .controls select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 1rem;
+      background-color: white;
+    }
+    
+    .section { 
+      background: #fff; 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      padding: 15px; 
+      margin-bottom: 20px;
+    }
+    
+    h2 { 
+      margin-top: 0; 
+      padding-bottom: 10px; 
+      border-bottom: 1px solid #eee; 
+      font-size: 1.2rem;
+    }
+    
+    /* Table Styles - Mobile First */
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 15px; 
+      font-size: 0.9rem;
+    }
+    
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 8px; 
+      text-align: left; 
+      vertical-align: top; 
+    }
+    
+    th { 
+      background-color: #f2f2f2; 
+    }
+    
+    /* Make tables responsive on small screens */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Dashboard Styles - Mobile First */
+    .details-view { 
+      display: none; 
+      flex-direction: column; 
+      gap: 20px; 
+    }
+    
+    .stats-grid { 
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px; 
+    }
+    
+    .stat-card { 
+      background: #f8f9fa; 
+      padding: 15px; 
+      border-radius: 8px; 
+      text-align: center; 
+      border: 1px solid #e0e0e0; 
+    }
+    
+    .stat-card h4 { 
+      margin: 0 0 8px 0; 
+      color: #666; 
+      font-size: 0.85em; 
+      text-transform: uppercase; 
+    }
+    
+    .stat-card p { 
+      font-size: 1.8em; 
+      font-weight: bold; 
+      margin: 0; 
+      color: #007bff; 
+    }
+    
+    .details-grid { 
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .chart-container { 
+      width: 100%;
+      max-width: 300px; 
+      margin: 10px auto; 
+    }
+    
+    .status-present { 
+      color: #155724; 
+      font-weight: bold; 
+    }
+    
+    .status-absent { 
+      color: #721c24; 
+      font-weight: bold; 
+    }
+    
+    .status-completed { 
+      color: #004085; 
+      font-weight: bold; 
+    }
+    
+    /* Placeholder styling */
+    #placeholder {
+      text-align: center;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    
+    /* Media queries for larger screens */
+    @media (min-width: 600px) {
+      body {
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 90%;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      h2 {
+        font-size: 1.4rem;
+      }
+      
+      .section {
+        padding: 20px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .chart-container {
+        max-width: 350px;
+      }
+      
+      table {
+        font-size: 1rem;
+      }
+      
+      th, td {
+        padding: 10px;
+      }
+    }
+    
+    @media (min-width: 900px) {
+      .container {
+        max-width: 1100px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 25px;
+      }
+      
+      .chart-container {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📈 Employee Analytics</h1>
+    <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
+    
+    <div class="controls">
+      <label for="employeeSelect">Select an Employee to View Details:</label>
+      <select id="employeeSelect" onchange="loadEmployeeDetails()"></select>
+    </div>
+    
+    <div id="placeholder"><p>Please select an employee to view their dashboard.</p></div>
+
+    <div id="detailsView" class="details-view">
+      <!-- STATS CARDS -->
+      <div class="section stats-grid">
+        <div class="stat-card">
+          <h4>Total Paid</h4>
+          <p id="totalPaidStat">₹0</p>
+        </div>
+        <div class="stat-card">
+          <h4>Total Hours Worked</h4>
+          <p id="totalHoursStat">0</p>
+        </div>
+        <div class="stat-card">
+          <h4>Attendance Rate</h4>
+          <p id="attendanceRateStat">0%</p>
+        </div>
+      </div>
+      
+      <!-- Chart and Payroll History Grid -->
+      <div class="details-grid">
+        <div class="section">
+          <h2>Attendance Summary</h2>
+          <div class="chart-container">
+            <canvas id="attendanceChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h2>Payroll History</h2>
+          <div class="table-responsive">
+            <table id="payrollTable">
+              <thead><tr><th>Period / Date</th><th>Amount Paid</th><th>Date Paid</th><th>Notes</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Attendance History Table -->
+      <div class="section">
+        <h2>Detailed Attendance History</h2>
+        <div class="table-responsive">
+          <table id="attendanceTable">
+            <thead><tr><th>Date</th><th>Status</th><th>Details</th><th>Hours Worked</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="../firebase-config.js"></script>
+  <script>
+    let attendanceChartInstance;
+
+    async function loadEmployeeDropdown() {
+      const select = document.getElementById('employeeSelect');
+      const snapshot = await db.collection("employees").orderBy("name").get();
+      select.innerHTML = '<option value="">-- Select an Employee --</option>';
+      snapshot.forEach(doc => {
+        select.add(new Option(doc.data().name, doc.id));
+      });
+    }
+    
+    async function loadEmployeeDetails() {
+      const employeeId = document.getElementById('employeeSelect').value;
+      const detailsView = document.getElementById('detailsView');
+      const placeholder = document.getElementById('placeholder');
+
+      if (!employeeId) {
+        detailsView.style.display = 'none';
+        placeholder.style.display = 'block';
+        return;
+      }
+      
+      detailsView.style.display = 'flex'; // Use flex for the layout
+      placeholder.style.display = 'none';
+      
+      // Reset views
+      document.querySelector('#attendanceTable tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
+      document.querySelector('#payrollTable tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
+      document.getElementById('totalPaidStat').innerText = '...';
+      document.getElementById('totalHoursStat').innerText = '...';
+      document.getElementById('attendanceRateStat').innerText = '...';
+
+      try {
+        const attPromise = db.collection("attendance").where("employeeId", "==", employeeId).get();
+        const payrollPromise = db.collection("payrollRecords").where("employeeId", "==", employeeId).get();
+        const [attSnapshot, payrollSnapshot] = await Promise.all([attPromise, payrollPromise]);
+
+        let totalPaid = 0;
+        let totalHours = 0;
+        let presentDays = 0;
+        let absentDays = 0;
+
+        // Process Payroll Data
+        const payrollTableBody = document.querySelector('#payrollTable tbody');
+        payrollTableBody.innerHTML = '';
+        if(payrollSnapshot.empty) {
+            payrollTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found.</td></tr>';
+        } else {
+            payrollSnapshot.docs
+                .sort((a,b) => b.data().paidOn.toDate() - a.data().paidOn.toDate())
+                .forEach(doc => {
+                    const data = doc.data();
+                    totalPaid += data.amount;
+                    let period = data.paymentDate ? data.paymentDate.toDate().toLocaleDateString() : 'Ad-hoc';
+                    if (data.type === 'hourly-period') {
+                        period = `${data.startDate.toDate().toLocaleDateString()} - ${data.endDate.toDate().toLocaleDateString()}`;
+                    }
+                    payrollTableBody.innerHTML += `<tr><td>${period}</td><td>₹${data.amount.toFixed(2)}</td><td>${data.paidOn.toDate().toLocaleDateString()}</td><td>${data.notes || 'N/A'}</td></tr>`;
+                });
+        }
+        
+        // Process Attendance Data
+        const attTableBody = document.querySelector('#attendanceTable tbody');
+        attTableBody.innerHTML = '';
+        if (attSnapshot.empty) {
+            attTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found.</td></tr>';
+        } else {
+            attSnapshot.docs
+                .sort((a,b) => b.data().date.toDate() - a.data().date.toDate())
+                .forEach(doc => {
+                    const data = doc.data();
+                    let details = 'N/A', hoursWorked = 'N/A', statusClass = '';
+
+                    if (data.status === 'Completed') {
+                        presentDays++;
+                        const clockIn = data.clockIn.toDate();
+                        const clockOut = data.clockOut.toDate();
+                        const hours = (clockOut - clockIn) / 3600000;
+                        totalHours += hours;
+                        hoursWorked = hours.toFixed(2);
+                        details = `In: ${clockIn.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}, Out: ${clockOut.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+                        statusClass = 'status-completed';
+                    } else if (data.status === 'Present') {
+                        presentDays++;
+                        details = `In: ${data.clockIn.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+                        statusClass = 'status-present';
+                    } else if (data.status === 'Absent') {
+                        absentDays++;
+                        details = data.reason || 'N/A';
+                        statusClass = 'status-absent';
+                    }
+                    attTableBody.innerHTML += `<tr><td>${data.date.toDate().toLocaleDateString()}</td><td><b class="${statusClass}">${data.status}</b></td><td>${details}</td><td>${hoursWorked}</td></tr>`;
+                });
+        }
+
+        // Final Calculations & UI Update
+        const totalDays = presentDays + absentDays;
+        const attendanceRate = totalDays > 0 ? ((presentDays / totalDays) * 100) : 0;
+        
+        document.getElementById('totalPaidStat').innerText = `₹${totalPaid.toFixed(2)}`;
+        document.getElementById('totalHoursStat').innerText = totalHours.toFixed(1);
+        document.getElementById('attendanceRateStat').innerText = `${attendanceRate.toFixed(0)}%`;
+        
+        renderAttendanceChart(presentDays, absentDays);
+
+      } catch (error) {
+          console.error("Error loading employee details:", error);
+          alert("Could not load employee details. A database index might be required. Check the console (F12) for details.");
+      }
+    }
+    
+    function renderAttendanceChart(present, absent) {
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        if (attendanceChartInstance) attendanceChartInstance.destroy();
+        
+        attendanceChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{
+                    data: [present, absent],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    window.onload = loadEmployeeDropdown;
+  </script>
+</body>
+</html>

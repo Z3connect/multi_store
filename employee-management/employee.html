@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Employees | POS</title>
+  <style>
+    :root {
+      /* Color variables */
+      --primary-color: #007bff;
+      --secondary-color: #6c757d;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --border-color: #dee2e6;
+      
+      /* Spacing variables */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      
+      /* Border radius */
+      --border-radius: 0.375rem;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: var(--spacing-md);
+      background-color: var(--light-color);
+      color: var(--dark-color);
+      line-height: 1.5;
+    }
+    
+    .container { 
+      width: 100%;
+      max-width: 1200px; 
+      margin: 0 auto;
+      padding: var(--spacing-md);
+    }
+    
+    h1, h2 { 
+      text-align: center; 
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .main-content { 
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+    
+    .form-section { 
+      border: 1px solid var(--border-color);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      background-color: white;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .list-section {
+      border: 1px solid var(--border-color);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      background-color: white;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    input, select { 
+      display: block;
+      width: 100%; 
+      padding: 0.75rem; 
+      margin-bottom: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: var(--spacing-xs);
+      font-weight: bold;
+    }
+    
+    button { 
+      padding: 0.75rem 1.25rem;
+      margin-bottom: var(--spacing-md);
+      color: white; 
+      border: none; 
+      cursor: pointer; 
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      width: 100%;
+      transition: background-color 0.2s;
+    }
+    
+    #saveEmployeeBtn { 
+      background: var(--primary-color);
+    }
+    
+    #saveEmployeeBtn:hover {
+      background: #0069d9;
+    }
+    
+    #cancelEditBtn { 
+      background: var(--secondary-color);
+      display: none; 
+    }
+    
+    #cancelEditBtn:hover {
+      background: #5a6268;
+    }
+    
+    /* Card view for mobile */
+    .employee-card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      background-color: white;
+    }
+    
+    .employee-card.deactivated {
+      background-color: #fcecec;
+      color: #a9a9a9;
+    }
+    
+    .employee-card h3 {
+      margin-bottom: var(--spacing-xs);
+      font-size: 1.1rem;
+    }
+    
+    .employee-card p {
+      margin-bottom: var(--spacing-xs);
+      font-size: 0.9rem;
+    }
+    
+    .employee-card .card-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+    
+    .employee-card .card-actions button {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    
+    /* Table styles (hidden on mobile) */
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: var(--spacing-md);
+      display: none;
+    }
+    
+    th, td { 
+      border: 1px solid var(--border-color);
+      padding: var(--spacing-sm);
+      text-align: left; 
+    }
+    
+    th { 
+      background-color: #f2f2f2; 
+    }
+    
+    .actions-cell button { 
+      width: auto; 
+      font-size: 0.9rem;
+      margin-right: var(--spacing-xs);
+      padding: 0.5rem 0.75rem;
+    }
+    
+    .deactivated-row { 
+      background-color: #fcecec; 
+      color: #a9a9a9; 
+    }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    #status {
+      text-align: center;
+      margin-top: var(--spacing-sm);
+      font-weight: bold;
+    }
+    
+    /* Media Queries */
+    @media (min-width: 768px) {
+      /* Tablet view */
+      .main-content {
+        display: flex;
+        flex-direction: row;
+        gap: var(--spacing-lg);
+      }
+      
+      .form-section {
+        flex: 1;
+      }
+      
+      .list-section {
+        flex: 2;
+      }
+      
+      .employee-cards {
+        display: none;
+      }
+      
+      table {
+        display: table;
+      }
+      
+      button {
+        width: auto;
+      }
+      
+      #saveEmployeeBtn, #cancelEditBtn {
+        padding: 0.75rem 1.5rem;
+        display: inline-block;
+      }
+      
+      #cancelEditBtn {
+        margin-left: var(--spacing-sm);
+      }
+    }
+    
+    @media (min-width: 992px) {
+      /* Desktop view */
+      .container {
+        padding: var(--spacing-lg);
+      }
+      
+      .form-section, .list-section {
+        padding: var(--spacing-lg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>👨‍💼 Employee Profiles</h1>
+    <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
+    
+    <div class="main-content">
+      <div class="form-section">
+        <h2 id="form-title">Add New Employee</h2>
+        <form id="employeeForm" onsubmit="event.preventDefault(); saveEmployee();">
+          <label for="employeeName">Full Name</label>
+          <input type="text" id="employeeName" placeholder="Full Name" required>
+          
+          <label for="gender">Gender</label>
+          <select id="gender" required>
+            <option value="">-- Select Gender --</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+          
+          <label for="age">Age</label>
+          <input type="number" id="age" placeholder="Age" required>
+          
+          <label for="phone">Phone Number</label>
+          <input type="number" id="phone" placeholder="Phone Number" required>
+          
+          <label for="whatsapp">WhatsApp Number</label>
+          <input type="number" id="whatsapp" placeholder="WhatsApp Number">
+          
+          <label for="hourlyRate">Hourly Rate (₹)</label>
+          <input type="number" id="hourlyRate" placeholder="e.g., 150" step="0.01" required>
+
+          <div>
+            <button type="submit" id="saveEmployeeBtn">Save Employee</button>
+            <button type="button" id="cancelEditBtn" onclick="cancelEdit()">Cancel Edit</button>
+          </div>
+          <p id="status"></p>
+        </form>
+      </div>
+      
+      <div class="list-section">
+        <h2>Existing Employees</h2>
+        
+        <!-- Card view for mobile -->
+        <div id="employeeCards" class="employee-cards"></div>
+        
+        <!-- Table view for tablet and desktop -->
+        <table>
+          <thead>
+            <tr>
+              <th>Name / Rate</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="employeeListTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="../firebase-config.js"></script>
+  <script>
+    let editModeEmployeeId = null;
+
+    function saveEmployee() {
+      const employeeData = {
+        name: document.getElementById('employeeName').value.trim(),
+        gender: document.getElementById('gender').value,
+        age: parseInt(document.getElementById('age').value),
+        phone: document.getElementById('phone').value.trim(),
+        whatsapp: document.getElementById('whatsapp').value.trim(),
+        hourlyRate: parseFloat(document.getElementById('hourlyRate').value) // NEW
+      };
+
+      if (!employeeData.name || !employeeData.hourlyRate || isNaN(employeeData.hourlyRate)) {
+        document.getElementById('status').innerText = "❌ Please fill all required fields, including a valid Hourly Rate.";
+        return;
+      }
+
+      let promise;
+      if (editModeEmployeeId) {
+        promise = db.collection("employees").doc(editModeEmployeeId).update(employeeData);
+      } else {
+        employeeData.isActive = true;
+        employeeData.dateAdded = new Date();
+        promise = db.collection("employees").add(employeeData);
+      }
+      promise.then(() => {
+        document.getElementById('status').innerText = `✅ Employee ${editModeEmployeeId ? 'updated' : 'saved'} successfully!`;
+        cancelEdit();
+        loadEmployeeList();
+      }).catch(error => {
+        document.getElementById('status').innerText = "⚠️ Error: " + error.message;
+      });
+    }
+
+    function loadEmployeeList() {
+      const tableBody = document.getElementById('employeeListTableBody');
+      const cardsContainer = document.getElementById('employeeCards');
+      
+      tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+      cardsContainer.innerHTML = '<p style="text-align: center;">Loading...</p>';
+      
+      db.collection("employees").orderBy("name").get().then(snapshot => {
+        tableBody.innerHTML = '';
+        cardsContainer.innerHTML = '';
+        
+        if (snapshot.empty) {
+          tableBody.innerHTML = '<tr><td colspan="4">No employees found.</td></tr>';
+          cardsContainer.innerHTML = '<p style="text-align: center;">No employees found.</p>';
+          return;
+        }
+        
+        snapshot.forEach(doc => {
+          const emp = doc.data(); 
+          emp.id = doc.id;
+          
+          // Create table row
+          const row = document.createElement('tr');
+          row.className = emp.isActive ? '' : 'deactivated-row';
+          row.innerHTML = `
+            <td><b>${emp.name}</b><br><small>Rate: ₹${emp.hourlyRate || 'N/A'} / hr</small></td>
+            <td>${emp.phone}</td>
+            <td>${emp.isActive ? 'Active' : 'Inactive'}</td>
+            <td class="actions-cell">
+              <button onclick="editEmployee('${emp.id}')" style="background-color: #17a2b8;">Edit</button>
+              <button onclick="toggleEmployeeStatus('${emp.id}', ${emp.isActive})" 
+                style="background-color: ${emp.isActive ? '#dc3545' : '#28a745'};">
+                ${emp.isActive ? 'Deactivate' : 'Activate'}
+              </button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+          
+          // Create card for mobile view
+          const card = document.createElement('div');
+          card.className = `employee-card ${emp.isActive ? '' : 'deactivated'}`;
+          card.innerHTML = `
+            <h3>${emp.name}</h3>
+            <p><strong>Rate:</strong> ₹${emp.hourlyRate || 'N/A'} / hr</p>
+            <p><strong>Phone:</strong> ${emp.phone}</p>
+            <p><strong>WhatsApp:</strong> ${emp.whatsapp || 'N/A'}</p>
+            <p><strong>Status:</strong> ${emp.isActive ? 'Active' : 'Inactive'}</p>
+            <div class="card-actions">
+              <button onclick="editEmployee('${emp.id}')" style="background-color: #17a2b8;">Edit</button>
+              <button onclick="toggleEmployeeStatus('${emp.id}', ${emp.isActive})" 
+                style="background-color: ${emp.isActive ? '#dc3545' : '#28a745'};">
+                ${emp.isActive ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          `;
+          cardsContainer.appendChild(card);
+        });
+      });
+    }
+
+    function editEmployee(id) {
+      db.collection("employees").doc(id).get().then(doc => {
+        if (!doc.exists) return;
+        const emp = doc.data();
+        document.getElementById('employeeName').value = emp.name;
+        document.getElementById('gender').value = emp.gender;
+        document.getElementById('age').value = emp.age;
+        document.getElementById('phone').value = emp.phone;
+        document.getElementById('whatsapp').value = emp.whatsapp || '';
+        document.getElementById('hourlyRate').value = emp.hourlyRate || '';
+        editModeEmployeeId = id;
+        document.getElementById('form-title').innerText = 'Edit Employee';
+        document.getElementById('saveEmployeeBtn').innerText = 'Update Employee';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        
+        // Scroll to form on mobile
+        if (window.innerWidth < 768) {
+          document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }
+    
+    function cancelEdit() {
+      editModeEmployeeId = null;
+      document.getElementById('employeeForm').reset();
+      document.getElementById('form-title').innerText = 'Add New Employee';
+      document.getElementById('saveEmployeeBtn').innerText = 'Save Employee';
+      document.getElementById('cancelEditBtn').style.display = 'none';
+      document.getElementById('status').innerText = '';
+    }
+
+    function toggleEmployeeStatus(id, currentStatus) {
+      db.collection("employees").doc(id).update({ isActive: !currentStatus })
+        .then(() => {
+          loadEmployeeList();
+          document.getElementById('status').innerText = `✅ Employee ${currentStatus ? 'deactivated' : 'activated'} successfully!`;
+        })
+        .catch(error => {
+          document.getElementById('status').innerText = "⚠️ Error: " + error.message;
+        });
+    }
+
+    // Check screen size and adjust layout if needed
+    function checkScreenSize() {
+      const isMobile = window.innerWidth < 768;
+      document.getElementById('cancelEditBtn').style.width = isMobile ? '100%' : 'auto';
+    }
+
+    window.addEventListener('resize', checkScreenSize);
+    window.onload = function() {
+      loadEmployeeList();
+      checkScreenSize();
+    };
+  </script>
+</body>
+</html>

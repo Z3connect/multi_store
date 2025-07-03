@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Attendance | Z3connect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --warning-color: #ffc107;
+      --info-color: #0d6efd;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --border-radius: 8px;
+      --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      --transition-speed: 0.3s;
+    }
+    
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body { 
+      background-color: var(--light-color);
+      color: var(--dark-color);
+      padding: 15px; 
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    
+    .container { 
+      width: 100%; 
+      margin: 0 auto; 
+      padding: 10px;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .back-button {
+      background: none;
+      border: none;
+      color: var(--primary-color);
+      font-size: 24px;
+      cursor: pointer;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .page-title {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      margin: 0;
+      display: flex;
+      align-items: center;
+    }
+    
+    .page-title i {
+      margin-right: 10px;
+    }
+    
+    .user-info {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .date-display {
+      font-weight: 500;
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+    }
+    
+    .holiday-banner { 
+      background-color: #e2f3ff; 
+      border-left: 5px solid var(--info-color);
+      color: var(--info-color); 
+      padding: 15px; 
+      text-align: center; 
+      border-radius: var(--border-radius); 
+      margin-bottom: 20px; 
+      font-size: 0.95rem;
+      display: none;
+      box-shadow: var(--box-shadow);
+    }
+    
+    .holiday-banner i {
+      margin-right: 8px;
+    }
+    
+    .attendance-list { 
+      list-style-type: none; 
+      padding: 0; 
+    }
+    
+    .employee-item { 
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 15px;
+      margin-bottom: 15px;
+      display: flex; 
+      flex-direction: column; 
+      transition: transform 0.2s ease;
+    }
+    
+    .employee-item:hover {
+      transform: translateY(-3px);
+    }
+    
+    .employee-info {
+      margin-bottom: 15px;
+    }
+    
+    .employee-info h4 { 
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: var(--dark-color);
+      display: flex;
+      align-items: center;
+    }
+    
+    .employee-info h4 i {
+      margin-right: 8px;
+      color: var(--primary-color);
+    }
+    
+    .employee-info p { 
+      font-size: 0.95rem; 
+      color: #666; 
+    }
+    
+    .actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 12px; 
+      border: none; 
+      border-radius: var(--border-radius); 
+      color: white; 
+      cursor: pointer; 
+      font-size: 0.95rem;
+      font-weight: 500;
+      min-height: 46px; /* Better touch target */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .btn i {
+      margin-right: 8px;
+    }
+    
+    .btn-clock-in { 
+      background-color: var(--success-color); 
+    }
+    
+    .btn-clock-in:hover {
+      background-color: #218838;
+    }
+    
+    .btn-clock-out { 
+      background-color: var(--warning-color); 
+      color: black; 
+    }
+    
+    .btn-clock-out:hover {
+      background-color: #e0a800;
+    }
+    
+    .btn-absent { 
+      background-color: var(--danger-color); 
+    }
+    
+    .btn-absent:hover {
+      background-color: #c82333;
+    }
+    
+    .status-present { 
+      color: var(--success-color); 
+      font-weight: 500; 
+      display: flex;
+      align-items: center;
+    }
+    
+    .status-present i, 
+    .status-absent i, 
+    .status-completed i {
+      margin-right: 5px;
+    }
+    
+    .status-absent { 
+      color: var(--danger-color); 
+      font-weight: 500; 
+      display: flex;
+      align-items: center;
+    }
+    
+    .status-completed { 
+      color: var(--info-color); 
+      font-weight: 500; 
+      display: flex;
+      align-items: center;
+    }
+    
+    /* Loading state */
+    .loading-container {
+      text-align: center;
+      padding: 30px;
+      color: #666;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-left: 4px solid var(--primary-color);
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      color: #ccc;
+      margin-bottom: 15px;
+    }
+    
+    .empty-state p {
+      color: #666;
+      margin-bottom: 10px;
+    }
+    
+    /* Modal Styles */
+    .modal { 
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      left: 0; 
+      top: 0; 
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.5); 
+      backdrop-filter: blur(3px);
+    }
+    
+    .modal-content { 
+      background-color: white; 
+      margin: 10% auto; 
+      padding: 25px; 
+      border-radius: var(--border-radius); 
+      box-shadow: var(--box-shadow);
+      width: 90%; 
+      max-width: 450px;
+      position: relative;
+      animation: modalOpen 0.3s ease forwards;
+    }
+    
+    @keyframes modalOpen {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .close-btn { 
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      color: #aaa; 
+      font-size: 24px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    
+    .close-btn:hover {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    
+    .modal-header {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .modal-header h3 {
+      font-size: 1.3rem;
+      color: var(--danger-color);
+      margin: 0;
+      display: flex;
+      align-items: center;
+    }
+    
+    .modal-header h3 i {
+      margin-right: 10px;
+    }
+    
+    .modal-body p {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .modal-body p i {
+      margin-right: 8px;
+      color: var(--primary-color);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+    }
+    
+    .form-control {
+      width: 100%; 
+      padding: 12px 15px; 
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .modal-footer {
+      margin-top: 20px;
+      text-align: right;
+    }
+    
+    /* Media queries for larger screens */
+    @media (min-width: 600px) {
+      body {
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 800px;
+      }
+      
+      .page-title {
+        font-size: 2rem;
+      }
+      
+      .employee-item {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+      }
+      
+      .employee-info {
+        margin-bottom: 0;
+      }
+      
+      .actions {
+        width: auto;
+        min-width: 300px;
+      }
+      
+      .user-info {
+        padding: 15px 20px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <button class="back-button" onclick="window.location.href='../billing-screen.html'">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 class="page-title"><i class="fas fa-user-clock"></i> Daily Attendance</h1>
+    </div>
+    
+<div class="user-info" style="display: none;">      <div>Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): <span id="currentDateTime">2025-07-02 14:12:07</span></div>
+      <div>Current User's Login: <span id="currentUser">santhoshsharuk</span></div>
+    </div>
+    
+    <div class="date-display">
+      <i class="fas fa-calendar-day"></i> Today: <span id="todayDate"></span>
+    </div>
+    
+    <div id="holidayBanner" class="holiday-banner">
+      <i class="fas fa-glass-cheers"></i> Today is a holiday: <span id="holidayName"></span>. Attendance tracking is disabled.
+    </div>
+    
+    <div id="attendanceContainer">
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading attendance data...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Absent Modal -->
+  <div id="absentModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeAbsentModal()">&times;</span>
+      
+      <div class="modal-header">
+        <h3><i class="fas fa-user-times"></i> Mark as Absent</h3>
+      </div>
+      
+      <div class="modal-body">
+        <p><i class="fas fa-user"></i> Employee: <b id="modalEmployeeName"></b></p>
+        
+        <div class="form-group">
+          <label for="absentReason"><i class="fas fa-clipboard-list"></i> Reason</label>
+          <select id="absentReason" class="form-control">
+            <option value="Sick Leave">Sick Leave</option>
+            <option value="Personal Leave">Personal Leave</option>
+            <option value="Uninformed">Uninformed</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="absentNotes"><i class="fas fa-sticky-note"></i> Additional Notes</label>
+          <input type="text" id="absentNotes" class="form-control" placeholder="Enter any additional details...">
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-absent" onclick="markAbsent()">
+          <i class="fas fa-check"></i> Confirm Absent
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="../firebase-config.js"></script>
+  <script>
+    // Initialize variables and constants
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    let currentModalEmployee = { id: null, name: null };
+    
+    // Format and display current date and time in the specified format
+    function updateDateTime() {
+      const now = new Date();
+      
+      // Format: YYYY-MM-DD HH:MM:SS
+      const year = now.getUTCFullYear();
+      const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(now.getUTCDate()).padStart(2, '0');
+      const hours = String(now.getUTCHours()).padStart(2, '0');
+      const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+      
+      const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      document.getElementById('currentDateTime').textContent = formattedDate;
+    }
+    
+    // Update the date time every second
+    setInterval(updateDateTime, 1000);
+    
+    // Check for user login info
+    function checkUserLogin() {
+      // In a real app, this would check the session storage or cookies
+      // For this demo, we'll use the hardcoded value
+      const username = sessionStorage.getItem('currentUser') || 'santhoshsharuk';
+      document.getElementById('currentUser').textContent = username;
+    }
+
+    // Helper function to generate attendance document ID
+    function getTodayAttendanceDocId(employeeId) {
+      return `${employeeId}_${todayString}`;
+    }
+
+    // Main function to load attendance data
+    async function loadAttendance() {
+      document.getElementById('todayDate').innerText = today.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      const container = document.getElementById('attendanceContainer');
+      
+      try {
+        // Check for holidays first
+        const holidayDoc = await db.collection("holidays").doc(todayString).get();
+        if (holidayDoc.exists) {
+          document.getElementById('holidayName').innerText = holidayDoc.data().name;
+          document.getElementById('holidayBanner').style.display = 'block';
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-umbrella-beach"></i>
+              <p>It's a holiday today!</p>
+              <p>Enjoy your time off.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Load active employees
+        const employeesSnapshot = await db.collection("employees").where("isActive", "==", true).get();
+        if (employeesSnapshot.empty) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-users-slash"></i>
+              <p>No active employees found.</p>
+              <p>Please add employees first.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Start building the attendance list
+        let listHTML = '<ul class="attendance-list">';
+        
+        for (const empDoc of employeesSnapshot.docs) {
+          const employee = { id: empDoc.id, ...empDoc.data() };
+          const attendanceDocId = getTodayAttendanceDocId(employee.id);
+          const attendanceDoc = await db.collection("attendance").doc(attendanceDocId).get();
+          
+          let statusHTML = '<p>Status: Not Clocked In</p>';
+          let buttonsHTML = `
+              <button class="btn btn-clock-in" onclick="clockIn('${employee.id}', '${employee.name}')">
+                <i class="fas fa-sign-in-alt"></i> Clock In
+              </button>
+              <button class="btn btn-absent" onclick="openAbsentModal('${employee.id}', '${employee.name}')">
+                <i class="fas fa-user-times"></i> Mark Absent
+              </button>
+          `;
+
+          if (attendanceDoc.exists) {
+            const data = attendanceDoc.data();
+            switch(data.status) {
+              case 'Present':
+                const clockInTime = data.clockIn.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                statusHTML = `<p class="status-present"><i class="fas fa-check-circle"></i> Clocked In at: ${clockInTime}</p>`;
+                buttonsHTML = `
+                  <button class="btn btn-clock-out" onclick="clockOut('${employee.id}')">
+                    <i class="fas fa-sign-out-alt"></i> Clock Out
+                  </button>
+                `;
+                break;
+              case 'Completed':
+                const inTime = data.clockIn.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const outTime = data.clockOut.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                statusHTML = `<p class="status-completed"><i class="fas fa-check-double"></i> Shift Completed: ${inTime} - ${outTime}</p>`;
+                buttonsHTML = ''; // No more actions
+                break;
+              case 'Absent':
+                statusHTML = `<p class="status-absent"><i class="fas fa-times-circle"></i> Absent: ${data.reason}</p>`;
+                if (data.notes) {
+                  statusHTML += `<p style="color: #666; font-size: 0.9rem; margin-top: 5px;"><i class="fas fa-sticky-note"></i> Note: ${data.notes}</p>`;
+                }
+                buttonsHTML = ''; // No more actions
+                break;
+            }
+          }
+
+          listHTML += `
+            <li class="employee-item" id="item-${employee.id}">
+              <div class="employee-info">
+                <h4><i class="fas fa-user"></i> ${employee.name}</h4>
+                ${statusHTML}
+              </div>
+              <div class="actions">${buttonsHTML}</div>
+            </li>
+          `;
+        }
+        
+        listHTML += '</ul>';
+        container.innerHTML = listHTML;
+        
+      } catch (error) {
+        console.error("Error loading attendance:", error);
+        container.innerHTML = `
+          <div class="empty-state" style="color: #dc3545;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error loading attendance data</p>
+            <p>${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Clock In function
+    async function clockIn(employeeId, employeeName) {
+      try {
+        const attendanceData = {
+          employeeId, 
+          employeeName, 
+          status: 'Present',
+          date: firebase.firestore.Timestamp.fromDate(today),
+          clockIn: new Date(), 
+          clockOut: null
+        };
+        
+        // Show loading state
+        const itemElement = document.getElementById(`item-${employeeId}`);
+        if (itemElement) {
+          const actionsDiv = itemElement.querySelector('.actions');
+          actionsDiv.innerHTML = `
+            <div style="text-align: center; width: 100%;">
+              <div class="spinner" style="display: inline-block;"></div>
+              <p>Processing...</p>
+            </div>
+          `;
+        }
+        
+        await db.collection("attendance").doc(getTodayAttendanceDocId(employeeId)).set(attendanceData);
+        
+        // Show success notification
+        showNotification(`${employeeName} clocked in successfully at ${new Date().toLocaleTimeString()}`, 'success');
+        
+        // Refresh the attendance list
+        loadAttendance();
+      } catch (error) {
+        console.error("Error clocking in:", error);
+        showNotification(`Error clocking in: ${error.message}`, 'error');
+        loadAttendance();
+      }
+    }
+
+    // Clock Out function
+    async function clockOut(employeeId) {
+      try {
+        // Show loading state
+        const itemElement = document.getElementById(`item-${employeeId}`);
+        if (itemElement) {
+          const actionsDiv = itemElement.querySelector('.actions');
+          actionsDiv.innerHTML = `
+            <div style="text-align: center; width: 100%;">
+              <div class="spinner" style="display: inline-block;"></div>
+              <p>Processing...</p>
+            </div>
+          `;
+        }
+        
+        await db.collection("attendance").doc(getTodayAttendanceDocId(employeeId)).update({
+          clockOut: new Date(), 
+          status: 'Completed'
+        });
+        
+        // Get employee name for notification
+        const employeeDoc = await db.collection("employees").doc(employeeId).get();
+        const employeeName = employeeDoc.exists ? employeeDoc.data().name : 'Employee';
+        
+        // Show success notification
+        showNotification(`${employeeName} clocked out successfully at ${new Date().toLocaleTimeString()}`, 'success');
+        
+        // Refresh the attendance list
+        loadAttendance();
+      } catch (error) {
+        console.error("Error clocking out:", error);
+        showNotification(`Error clocking out: ${error.message}`, 'error');
+        loadAttendance();
+      }
+    }
+
+    // Open the Absent Modal
+    function openAbsentModal(employeeId, employeeName) {
+      currentModalEmployee = { id: employeeId, name: employeeName };
+      document.getElementById('modalEmployeeName').innerText = employeeName;
+      document.getElementById('absentReason').value = 'Sick Leave';
+      document.getElementById('absentNotes').value = '';
+      document.getElementById('absentModal').style.display = 'block';
+    }
+
+    // Close the Absent Modal
+    function closeAbsentModal() {
+      document.getElementById('absentModal').style.display = 'none';
+    }
+
+    // Mark employee as absent
+    async function markAbsent() {
+      try {
+        const { id, name } = currentModalEmployee;
+        const reason = document.getElementById('absentReason').value;
+        const notes = document.getElementById('absentNotes').value.trim();
+
+        const attendanceData = {
+          employeeId: id, 
+          employeeName: name, 
+          status: 'Absent',
+          reason: reason, 
+          notes: notes,
+          date: firebase.firestore.Timestamp.fromDate(today),
+          clockIn: null, 
+          clockOut: null
+        };
+        
+        await db.collection("attendance").doc(getTodayAttendanceDocId(id)).set(attendanceData);
+        
+        // Close modal and refresh data
+        closeAbsentModal();
+        
+        // Show success notification
+        showNotification(`${name} marked as absent (${reason})`, 'success');
+        
+        loadAttendance();
+      } catch (error) {
+        console.error("Error marking absent:", error);
+        showNotification(`Error marking absent: ${error.message}`, 'error');
+        closeAbsentModal();
+        loadAttendance();
+      }
+    }
+    
+    // Show notification
+    function showNotification(message, type = 'info') {
+      // Create notification element if it doesn't exist
+      let notification = document.getElementById('notification');
+      if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          padding: 15px 20px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          z-index: 1001;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          display: flex;
+          align-items: center;
+          max-width: 350px;
+          transform: translateY(100px);
+          opacity: 0;
+          transition: all 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+      }
+      
+      // Set background color based on type
+      let bgColor, icon;
+      switch(type) {
+        case 'success':
+          bgColor = '#28a745';
+          icon = 'fas fa-check-circle';
+          break;
+        case 'error':
+          bgColor = '#dc3545';
+          icon = 'fas fa-exclamation-circle';
+          break;
+        default:
+          bgColor = '#0d6efd';
+          icon = 'fas fa-info-circle';
+      }
+      
+      notification.style.backgroundColor = bgColor;
+      notification.innerHTML = `<i class="${icon}" style="margin-right: 10px;"></i> ${message}`;
+      
+      // Show the notification with animation
+      setTimeout(() => {
+        notification.style.transform = 'translateY(0)';
+        notification.style.opacity = '1';
+      }, 10);
+      
+      // Auto hide after 4 seconds
+      setTimeout(() => {
+        notification.style.transform = 'translateY(100px)';
+        notification.style.opacity = '0';
+      }, 4000);
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('absentModal');
+      if (event.target === modal) {
+        closeAbsentModal();
+      }
+    }
+    
+    // Escape key to close modal
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeAbsentModal();
+      }
+    });
+    
+    // Initialize page
+    window.onload = function() {
+      updateDateTime();
+      checkUserLogin();
+      loadAttendance();
+    };
+  </script>
+</body>
+</html>

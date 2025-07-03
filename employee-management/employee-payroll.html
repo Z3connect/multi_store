@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Payroll | POS</title>
+  <style>
+    /* Base styles (mobile-first) */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 10px; 
+      background-color: #f9f9f9; 
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    
+    .container { 
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    h1 { 
+      text-align: center; 
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    
+    .section { 
+      background: #fff; 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      padding: 15px; 
+      margin-bottom: 20px; 
+    }
+    
+    h2 { 
+      margin-top: 0; 
+      padding-bottom: 10px; 
+      border-bottom: 1px solid #eee; 
+      font-size: 1.2rem;
+    }
+    
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.8rem;
+    }
+    
+    h4 {
+      font-size: 1rem;
+      margin: 1rem 0 0.5rem 0;
+    }
+    
+    label {
+      display: block;
+      margin: 0.8rem 0 0.3rem 0;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    
+    select, 
+    input, 
+    button { 
+      padding: 12px 10px; 
+      margin: 0; 
+      width: 100%; 
+      box-sizing: border-box; 
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    
+    button { 
+      color: white; 
+      border: none; 
+      cursor: pointer; 
+      border-radius: 5px; 
+      font-size: 1em; 
+      margin-top: 15px;
+      min-height: 44px; /* Better touch target */
+    }
+    
+    .grid { 
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .result-area { 
+      background-color: #f0f5ff; 
+      border: 1px solid #b3d7ff; 
+      padding: 15px; 
+      border-radius: 5px; 
+      margin-top: 20px; 
+    }
+    
+    .result-area h3 { 
+      margin-top: 0; 
+    }
+    
+    .result-area p { 
+      margin: 8px 0; 
+      font-size: 1em; 
+    }
+    
+    .result-area span { 
+      font-weight: bold; 
+    }
+    
+    #resultAmount { 
+      font-size: 1.3em; 
+      color: #28a745; 
+    }
+    
+    hr {
+      margin: 10px 0;
+      border: none;
+      border-top: 1px solid #ddd;
+    }
+    
+    /* Holiday section */
+    #holidayList { 
+      list-style-type: none; 
+      padding: 0; 
+      max-height: 150px; 
+      overflow-y: auto; 
+      margin-top: 0.5rem;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+    
+    #holidayList li { 
+      background: #e9ecef; 
+      padding: 10px; 
+      margin-bottom: 5px; 
+      border-radius: 0; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      font-size: 0.9rem;
+    }
+    
+    #holidayList li:last-child {
+      margin-bottom: 0;
+    }
+    
+    #calcStatus,
+    #holidayStatus {
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+    
+    /* Media queries for larger screens */
+    @media (min-width: 600px) {
+      body {
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 600px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+      }
+      
+      h2 {
+        font-size: 1.4rem;
+      }
+      
+      .section {
+        padding: 20px;
+      }
+      
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+    }
+    
+    @media (min-width: 800px) {
+      .container {
+        max-width: 800px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .result-area p {
+        font-size: 1.1em;
+      }
+      
+      #resultAmount {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 Employee Payroll (Hourly)</h1>
+    <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
+
+    <div class="section">
+      <h2>Calculate & Process Payroll</h2>
+      
+      <label for="employeeSelect">Select Employee</label>
+      <select id="employeeSelect"></select>
+      
+      <div class="grid">
+        <div>
+          <label for="startDate">Start Date:</label>
+          <input type="date" id="startDate">
+        </div>
+        <div>
+          <label for="endDate">End Date:</label>
+          <input type="date" id="endDate">
+        </div>
+      </div>
+      
+      <button onclick="calculatePayroll()" style="background-color:#17a2b8;">Calculate Pay</button>
+      
+      <div id="resultArea" class="result-area" style="display:none;">
+        <h3>Calculation Result</h3>
+        <p>Employee: <span id="resultName"></span></p>
+        <p>Period: <span id="resultPeriod"></span></p>
+        <p>Total Hours Worked: <span id="resultHours"></span></p>
+        <p>Hourly Rate: <span id="resultRate"></span></p>
+        <hr>
+        <p>Total Payable Amount: <b id="resultAmount"></b></p>
+        <button onclick="markAsPaid()" style="background-color:#28a745;">Mark as Paid & Record</button>
+      </div>
+      <p id="calcStatus"></p>
+    </div>
+
+    <!-- MANAGE HOLIDAYS SECTION -->
+    <div class="section">
+        <h2>🗓️ Manage Holidays</h2>
+        <p>Holidays added here will be automatically excluded from payroll calculations.</p>
+        <div class="grid">
+            <div>
+              <label for="holidayDate">Holiday Date:</label>
+              <input type="date" id="holidayDate">
+            </div>
+            <div>
+              <label for="holidayName">Holiday Name:</label>
+              <input type="text" id="holidayName" placeholder="e.g., Diwali">
+            </div>
+        </div>
+        <button onclick="addHoliday()" style="background-color:#6f42c1;">Add Holiday</button>
+        <p id="holidayStatus"></p>
+        <h4>Upcoming/Past Holidays:</h4>
+        <ul id="holidayList"></ul>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="../firebase-config.js"></script>
+  <script>
+    let lastCalculation = null;
+    let holidaysMap = new Map(); // To store holidays for quick lookup
+
+    // Use an async initializer to load multiple data sets
+    async function initializePage() {
+        await loadEmployees();
+        await loadHolidays();
+    }
+
+    async function loadEmployees() {
+      const select = document.getElementById('employeeSelect');
+      const snapshot = await db.collection("employees").where("isActive", "==", true).orderBy("name").get();
+      
+      select.innerHTML = '<option value="">-- Select an Employee --</option>';
+      snapshot.forEach(doc => {
+        const emp = doc.data();
+        // Display hourly rate if it exists
+        const rateText = emp.hourlyRate ? `(₹${emp.hourlyRate}/hr)` : '(No hourly rate set)';
+        const option = new Option(`${emp.name} ${rateText}`, doc.id);
+        select.add(option);
+      });
+    }
+    
+    async function calculatePayroll() {
+        document.getElementById('resultArea').style.display = 'none';
+        const statusEl = document.getElementById('calcStatus');
+        statusEl.innerText = 'Calculating...';
+
+        const employeeId = document.getElementById('employeeSelect').value;
+        const startDate = new Date(document.getElementById('startDate').value);
+        const endDate = new Date(document.getElementById('endDate').value);
+        endDate.setHours(23, 59, 59, 999);
+
+        if (!employeeId || !startDate.getTime() || !endDate.getTime()) {
+            statusEl.innerText = "Please select an employee and a valid date range.";
+            return;
+        }
+
+        const empDoc = await db.collection("employees").doc(employeeId).get();
+        if (!empDoc.exists || !empDoc.data().hourlyRate) {
+            statusEl.innerText = "Hourly rate is not set for this employee. Please set it on the Manage Profiles page.";
+            return;
+        }
+        
+        const employee = empDoc.data();
+        let totalHours = 0;
+        let skippedHolidayCount = 0; // To track skipped shifts
+
+        const attendanceSnapshot = await db.collection("attendance")
+          .where("employeeId", "==", employeeId)
+          .where("status", "==", "Completed")
+          .where("date", ">=", startDate)
+          .where("date", "<=", endDate)
+          .get();
+
+        if (attendanceSnapshot.empty) {
+            statusEl.innerText = "No completed shifts found for this employee in the selected period.";
+            return;
+        }
+
+        attendanceSnapshot.forEach(doc => {
+            const att = doc.data();
+            const shiftDate = att.date.toDate();
+            const dateString = shiftDate.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+
+            // Holiday check
+            if (holidaysMap.has(dateString)) {
+                console.log(`Skipping shift on holiday: ${dateString}`);
+                skippedHolidayCount++;
+                return; // Skip this attendance record
+            }
+
+            if (att.clockIn && att.clockOut) {
+                const clockInTime = att.clockIn.toDate();
+                const clockOutTime = att.clockOut.toDate();
+                const hoursWorked = (clockOutTime - clockInTime) / 3600000; // milliseconds to hours
+                totalHours += hoursWorked;
+            }
+        });
+
+        const payableAmount = totalHours * employee.hourlyRate;
+      
+        document.getElementById('resultName').innerText = employee.name;
+        document.getElementById('resultPeriod').innerText = `${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
+        document.getElementById('resultHours').innerText = `${totalHours.toFixed(2)} hours`;
+        document.getElementById('resultRate').innerText = `₹${employee.hourlyRate.toFixed(2)} / hour`;
+        document.getElementById('resultAmount').innerText = `₹${payableAmount.toFixed(2)}`;
+        
+        document.getElementById('resultArea').style.display = 'block';
+        
+        // Update status with holiday info if needed
+        let finalStatus = '';
+        if (skippedHolidayCount > 0) {
+            finalStatus = `Note: ${skippedHolidayCount} shift(s) on holidays were excluded from the calculation.`;
+        }
+        statusEl.innerText = finalStatus;
+
+        lastCalculation = {
+            employeeId, employeeName: employee.name, startDate, endDate,
+            totalHours, hourlyRate: employee.hourlyRate,
+            amount: payableAmount
+        };
+    }
+
+    async function markAsPaid() {
+      if (!lastCalculation) return;
+
+      const payrollRecord = {
+        ...lastCalculation,
+        paidOn: new Date(),
+        type: 'hourly-period'
+      };
+      
+      await db.collection("payrollRecords").add(payrollRecord);
+      document.getElementById('calcStatus').innerText = `✅ Payment of ₹${lastCalculation.amount.toFixed(2)} for ${lastCalculation.employeeName} has been recorded.`;
+      document.getElementById('resultArea').style.display = 'none';
+      lastCalculation = null;
+    }
+
+    // Functions for holiday management
+    async function addHoliday() {
+      const holidayDate = document.getElementById('holidayDate').value;
+      const holidayName = document.getElementById('holidayName').value.trim();
+      const statusEl = document.getElementById('holidayStatus');
+
+      if (!holidayDate || !holidayName) {
+        alert("Please provide both a date and a name for the holiday.");
+        return;
+      }
+
+      statusEl.innerText = "Adding...";
+      try {
+        // Use the date string 'YYYY-MM-DD' as the document ID for easy lookups
+        await db.collection("holidays").doc(holidayDate).set({
+          name: holidayName,
+          date: new Date(holidayDate) // Store the full date object as well
+        });
+        statusEl.innerText = `✅ Holiday "${holidayName}" added successfully.`;
+        statusEl.style.color = 'green';
+        
+        // Clear inputs and reload the holiday list
+        document.getElementById('holidayDate').value = '';
+        document.getElementById('holidayName').value = '';
+        await loadHolidays();
+      } catch (error) {
+        console.error("Error adding holiday:", error);
+        statusEl.innerText = `❌ Error: ${error.message}`;
+        statusEl.style.color = 'red';
+      }
+    }
+
+    async function loadHolidays() {
+      const listEl = document.getElementById('holidayList');
+      const snapshot = await db.collection("holidays").orderBy("date", "desc").get();
+      
+      listEl.innerHTML = '<li>Loading holidays...</li>';
+      holidaysMap.clear(); // Clear the map before reloading
+      
+      if (snapshot.empty) {
+        listEl.innerHTML = '<li>No holidays found.</li>';
+        return;
+      }
+      
+      listEl.innerHTML = '';
+      snapshot.forEach(doc => {
+        // The doc.id is the 'YYYY-MM-DD' string
+        holidaysMap.set(doc.id, doc.data().name);
+        
+        const li = document.createElement('li');
+        li.textContent = `${doc.id}: ${doc.data().name}`;
+        listEl.appendChild(li);
+      });
+    }
+
+    window.onload = initializePage;
+  </script>
+</body>
+</html>

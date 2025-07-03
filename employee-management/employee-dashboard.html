@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Management | POS</title>
+  <style>
+    /* Base styles (mobile-first) */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      background-color: #f4f7f6; 
+      margin: 0; 
+      padding: 15px; 
+      color: #333; 
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    
+    .container { 
+      width: 100%;
+      margin: 0 auto; 
+    }
+    
+    header { 
+      text-align: center; 
+      margin-bottom: 25px; 
+    }
+    
+    header h1 { 
+      font-size: 1.8em; 
+      color: #1a252f; 
+    }
+    
+    .nav-grid { 
+      display: grid; 
+      grid-template-columns: 1fr; 
+      gap: 15px; 
+    }
+    
+    .nav-card { 
+      background: #fff; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06); 
+      padding: 20px; 
+      text-decoration: none; 
+      color: inherit; 
+      transition: transform 0.2s; 
+      display: block;
+      min-height: 110px;
+    }
+    
+    .nav-card:active { 
+      background-color: #f9f9f9; 
+    }
+    
+    .nav-card h2 { 
+      margin: 0 0 8px 0; 
+      font-size: 1.2em; 
+      color: #007bff; 
+    }
+    
+    .nav-card p { 
+      margin: 0; 
+      font-size: 0.9em; 
+      line-height: 1.4; 
+    }
+    
+    .home-link { 
+      display: block; 
+      text-align: center; 
+      margin-top: 25px; 
+      font-size: 1em;
+      padding: 15px;
+    }
+    
+    /* Current user info */
+    .user-info {
+      text-align: center;
+      font-size: 0.8em;
+      color: #666;
+      margin-bottom: 15px;
+    }
+    
+    /* Media queries for larger screens */
+    @media (min-width: 600px) {
+      body {
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 90%;
+      }
+      
+      header {
+        margin-bottom: 30px;
+      }
+      
+      header h1 {
+        font-size: 2em;
+      }
+      
+      .nav-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      
+      .nav-card:hover {
+        transform: translateY(-5px);
+      }
+      
+      .home-link {
+        margin-top: 30px;
+        font-size: 1.05em;
+      }
+    }
+    
+    @media (min-width: 900px) {
+      body {
+        padding: 30px;
+      }
+      
+      .container {
+        max-width: 900px;
+      }
+      
+      header h1 {
+        font-size: 2.5em;
+      }
+      
+      .nav-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+      }
+      
+      .nav-card {
+        padding: 25px;
+      }
+      
+      .nav-card h2 {
+        font-size: 1.4em;
+      }
+      
+      .nav-card p {
+        font-size: 0.95em;
+        line-height: 1.5;
+      }
+      
+      .home-link {
+        margin-top: 40px;
+        font-size: 1.1em;
+      }
+      
+      .user-info {
+        font-size: 0.9em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>👨‍💼 Employee Management</h1>
+      <div class="user-info">Logged in as: santhoshsharuk</div>
+    </header>
+    <div class="nav-grid">
+      <a href="employee.html" class="nav-card">
+        <h2>Manage Profiles</h2>
+        <p>Add new employees, edit their details, and set their status to active or inactive.</p>
+      </a>
+      <a href="employee-attendance.html" class="nav-card">
+        <h2>Daily Attendance</h2>
+        <p>Clock employees in and out each day to record their presence and working hours.</p>
+      </a>
+      <a href="employee-payroll.html" class="nav-card">
+        <h2>Process Payroll</h2>
+        <p>Define salary structures (daily/monthly) and calculate and record salary payments.</p>
+      </a>
+      <a href="employee-view.html" class="nav-card">
+        <h2>Employee Analytics</h2>
+        <p>View a detailed dashboard for each employee with their complete attendance and salary history.</p>
+      </a>
+    </div>
+    <a href="../admin_dashboard.html" class="home-link">← Back to Main Dashboard</a>
+  </div>
+</body>
+</html>
