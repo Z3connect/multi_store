@@ -4,320 +4,369 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manage Employees | POS</title>
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
+    /* --- THEME & LAYOUT STYLES --- */
     :root {
-      /* Color variables */
-      --primary-color: #007bff;
-      --secondary-color: #6c757d;
-      --success-color: #28a745;
-      --danger-color: #dc3545;
-      --light-color: #f8f9fa;
-      --dark-color: #343a40;
-      --border-color: #dee2e6;
-      
-      /* Spacing variables */
-      --spacing-xs: 0.25rem;
-      --spacing-sm: 0.5rem;
-      --spacing-md: 1rem;
-      --spacing-lg: 1.5rem;
-      --spacing-xl: 2rem;
-      
-      /* Border radius */
-      --border-radius: 0.375rem;
+        --primary-color: #4361ee;
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-color: #dee2e6;
+        
+        --sidebar-width: 250px;
+        --header-height: 70px;
+        --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        --border-radius: 8px;
+        --transition-speed: 0.3s;
+
+        /* Spacing variables */
+        --spacing-xs: 0.25rem;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
     }
-    
+
     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    
-    body { 
-      font-family: Arial, sans-serif; 
-      padding: var(--spacing-md);
-      background-color: var(--light-color);
-      color: var(--dark-color);
-      line-height: 1.5;
+
+    body {
+        background-color: var(--light-color);
+        color: var(--dark-color);
+        overflow-x: hidden;
     }
-    
-    .container { 
-      width: 100%;
-      max-width: 1200px; 
-      margin: 0 auto;
-      padding: var(--spacing-md);
+
+    /* Sidebar styles */
+    .sidebar {
+        position: fixed; top: 0; left: 0; height: 100%; width: var(--sidebar-width);
+        background: var(--primary-color); color: var(--light-color); padding: 20px 0;
+        transition: all var(--transition-speed) ease; z-index: 1000; overflow-y: auto; box-shadow: var(--box-shadow);
     }
-    
-    h1, h2 { 
-      text-align: center; 
-      margin-bottom: var(--spacing-md);
+    .sidebar.collapsed { left: calc(var(--sidebar-width) * -1); }
+    .sidebar-header {
+        padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;
     }
-    
-    .main-content { 
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-lg);
+    .logo { font-size: 24px; font-weight: 700; }
+    .logo i { margin-right: 10px; }
+    .close-sidebar { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+    .sidebar-menu { list-style: none; }
+    .menu-link { display: flex; align-items: center; padding: 12px 20px; color: var(--light-color); text-decoration: none; transition: all 0.2s ease; }
+    .menu-link:hover, .menu-link.active { background-color: rgba(255, 255, 255, 0.15); }
+    .menu-link i { width: 25px; text-align: center; margin-right: 15px; font-size: 1.1em; }
+    .menu-section { padding: 10px 20px; font-size: 12px; text-transform: uppercase; opacity: 0.7; margin-top: 15px; }
+
+    /* Main content area */
+    .main-wrapper { margin-left: var(--sidebar-width); transition: margin-left var(--transition-speed) ease; }
+    .main-wrapper.expanded { margin-left: 0; }
+
+    /* Header styles */
+    .header {
+        display: flex; justify-content: space-between; align-items: center;
+        height: var(--header-height); padding: 0 var(--spacing-lg);
+        background-color: white; box-shadow: var(--box-shadow);
     }
+    .toggle-sidebar { background: none; border: none; color: var(--dark-color); font-size: 24px; cursor: pointer; }
+    .user-profile { display: flex; align-items: center; }
+    .user-info { margin-right: 15px; text-align: right; }
+    .user-name { font-weight: 600; }
+    .user-role { font-size: 12px; color: #666; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
     
-    .form-section { 
-      border: 1px solid var(--border-color);
-      padding: var(--spacing-md);
-      border-radius: var(--border-radius);
-      background-color: white;
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    /* Page Content */
+    main { padding: var(--spacing-lg); }
+    h1 { text-align: center; font-size: 2rem; margin-bottom: var(--spacing-md); }
+    h2 { font-size: 1.5rem; border-bottom: 2px solid var(--primary-color); padding-bottom: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+    .back-link { display: block; text-align: center; margin-bottom: var(--spacing-lg); color: var(--primary-color); text-decoration: none; font-weight: bold; }
+    .back-link:hover { text-decoration: underline; }
+
+    /* Page-specific styles */
+    .page-layout { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+    .form-section, .list-section { border: 1px solid var(--border-color); padding: var(--spacing-lg); border-radius: var(--border-radius); background-color: white; box-shadow: var(--box-shadow); }
+    
+    label { display: block; margin-bottom: var(--spacing-xs); font-weight: bold; }
+    input, select {
+      display: block; width: 100%; padding: 0.75rem; margin-bottom: var(--spacing-md);
+      border: 1px solid var(--border-color); border-radius: var(--border-radius); font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
+    input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2); }
     
-    .list-section {
-      border: 1px solid var(--border-color);
-      padding: var(--spacing-md);
-      border-radius: var(--border-radius);
-      background-color: white;
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    .form-actions button {
+        width: 100%;
+        margin-bottom: var(--spacing-sm);
     }
-    
-    input, select { 
-      display: block;
-      width: 100%; 
-      padding: 0.75rem; 
-      margin-bottom: var(--spacing-md);
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: var(--spacing-xs);
-      font-weight: bold;
-    }
-    
+
     button { 
-      padding: 0.75rem 1.25rem;
-      margin-bottom: var(--spacing-md);
-      color: white; 
-      border: none; 
-      cursor: pointer; 
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      width: 100%;
-      transition: background-color 0.2s;
+      padding: 0.75rem 1.25rem; color: white; border: none; cursor: pointer; 
+      border-radius: var(--border-radius); font-size: 1rem; font-weight: bold;
+      transition: opacity 0.2s;
     }
+    button:hover { opacity: 0.85; }
+    #saveEmployeeBtn { background: var(--primary-color); }
+    #cancelEditBtn { background: var(--secondary-color); display: none; }
     
-    #saveEmployeeBtn { 
-      background: var(--primary-color);
-    }
-    
-    #saveEmployeeBtn:hover {
-      background: #0069d9;
-    }
-    
-    #cancelEditBtn { 
-      background: var(--secondary-color);
-      display: none; 
-    }
-    
-    #cancelEditBtn:hover {
-      background: #5a6268;
-    }
-    
-    /* Card view for mobile */
+    .employee-cards { display: block; }
     .employee-card {
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      padding: var(--spacing-md);
-      margin-bottom: var(--spacing-md);
-      background-color: white;
+      border: 1px solid var(--border-color); border-radius: var(--border-radius);
+      padding: var(--spacing-md); margin-bottom: var(--spacing-md); background-color: white;
     }
+    .employee-card.deactivated { background-color: #fff1f2; }
+    .employee-card h3 { margin-bottom: var(--spacing-xs); font-size: 1.2rem; color: var(--primary-color); }
+    .employee-card p { margin-bottom: var(--spacing-xs); font-size: 0.9rem; }
+    .employee-card .card-actions { display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md); }
+    .employee-card .card-actions button { flex: 1; margin-bottom: 0; font-size: 0.9rem; padding: 0.6rem; }
+
+    .table-container { display: none; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid var(--border-color); padding: var(--spacing-md); text-align: left; vertical-align: middle; }
+    th { background-color: #f2f2f2; font-weight: bold; }
+    .actions-cell button { width: auto; font-size: 0.85rem; margin-right: var(--spacing-xs); padding: 0.5rem 0.75rem; margin-bottom: 0; }
+    .deactivated-row { background-color: #fff1f2; color: #a9a9a9; }
     
-    .employee-card.deactivated {
-      background-color: #fcecec;
-      color: #a9a9a9;
-    }
+    #status { text-align: center; margin-top: var(--spacing-sm); font-weight: bold; min-height: 1.5em; }
     
-    .employee-card h3 {
-      margin-bottom: var(--spacing-xs);
-      font-size: 1.1rem;
-    }
-    
-    .employee-card p {
-      margin-bottom: var(--spacing-xs);
-      font-size: 0.9rem;
-    }
-    
-    .employee-card .card-actions {
-      display: flex;
-      gap: var(--spacing-sm);
-      margin-top: var(--spacing-md);
-    }
-    
-    .employee-card .card-actions button {
-      flex: 1;
-      margin-bottom: 0;
-    }
-    
-    /* Table styles (hidden on mobile) */
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      margin-top: var(--spacing-md);
-      display: none;
-    }
-    
-    th, td { 
-      border: 1px solid var(--border-color);
-      padding: var(--spacing-sm);
-      text-align: left; 
-    }
-    
-    th { 
-      background-color: #f2f2f2; 
-    }
-    
-    .actions-cell button { 
-      width: auto; 
-      font-size: 0.9rem;
-      margin-right: var(--spacing-xs);
-      padding: 0.5rem 0.75rem;
-    }
-    
-    .deactivated-row { 
-      background-color: #fcecec; 
-      color: #a9a9a9; 
-    }
-    
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-bottom: var(--spacing-lg);
-      color: var(--primary-color);
-      text-decoration: none;
-    }
-    
-    .back-link:hover {
-      text-decoration: underline;
-    }
-    
-    #status {
-      text-align: center;
-      margin-top: var(--spacing-sm);
-      font-weight: bold;
-    }
-    
-    /* Media Queries */
-    @media (min-width: 768px) {
-      /* Tablet view */
-      .main-content {
-        display: flex;
-        flex-direction: row;
-        gap: var(--spacing-lg);
-      }
-      
-      .form-section {
-        flex: 1;
-      }
-      
-      .list-section {
-        flex: 2;
-      }
-      
-      .employee-cards {
-        display: none;
-      }
-      
-      table {
-        display: table;
-      }
-      
-      button {
-        width: auto;
-      }
-      
-      #saveEmployeeBtn, #cancelEditBtn {
-        padding: 0.75rem 1.5rem;
-        display: inline-block;
-      }
-      
-      #cancelEditBtn {
-        margin-left: var(--spacing-sm);
-      }
-    }
-    
+    .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+    .overlay.visible { display: block; }
+
     @media (min-width: 992px) {
-      /* Desktop view */
-      .container {
-        padding: var(--spacing-lg);
-      }
-      
-      .form-section, .list-section {
-        padding: var(--spacing-lg);
-      }
+      .employee-cards { display: none; }
+      .table-container { display: block; }
+      .page-layout { flex-direction: row; }
+      .form-section { flex: 1; align-self: flex-start; }
+      .list-section { flex: 2; }
+      .form-actions button { width: auto; }
+      #cancelEditBtn { margin-left: var(--spacing-sm); }
+    }
+    @media (max-width: 768px) {
+      .sidebar { left: calc(var(--sidebar-width) * -1); }
+      .sidebar.mobile-visible { left: 0; }
+      .main-wrapper { margin-left: 0; }
+      .user-info { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>👨‍💼 Employee Profiles</h1>
-    <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
-    
-    <div class="main-content">
-      <div class="form-section">
-        <h2 id="form-title">Add New Employee</h2>
-        <form id="employeeForm" onsubmit="event.preventDefault(); saveEmployee();">
-          <label for="employeeName">Full Name</label>
-          <input type="text" id="employeeName" placeholder="Full Name" required>
-          
-          <label for="gender">Gender</label>
-          <select id="gender" required>
-            <option value="">-- Select Gender --</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-          
-          <label for="age">Age</label>
-          <input type="number" id="age" placeholder="Age" required>
-          
-          <label for="phone">Phone Number</label>
-          <input type="number" id="phone" placeholder="Phone Number" required>
-          
-          <label for="whatsapp">WhatsApp Number</label>
-          <input type="number" id="whatsapp" placeholder="WhatsApp Number">
-          
-          <label for="hourlyRate">Hourly Rate (₹)</label>
-          <input type="number" id="hourlyRate" placeholder="e.g., 150" step="0.01" required>
-
-          <div>
-            <button type="submit" id="saveEmployeeBtn">Save Employee</button>
-            <button type="button" id="cancelEditBtn" onclick="cancelEdit()">Cancel Edit</button>
-          </div>
-          <p id="status"></p>
-        </form>
-      </div>
-      
-      <div class="list-section">
-        <h2>Existing Employees</h2>
+  
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                <span>Z3connect</span>
+            </div>
+            <button class="toggle-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
         
-        <!-- Card view for mobile -->
-        <div id="employeeCards" class="employee-cards"></div>
-        
-        <!-- Table view for tablet and desktop -->
-        <table>
-          <thead>
-            <tr>
-              <th>Name / Rate</th>
-              <th>Contact</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="employeeListTableBody"></tbody>
-        </table>
-      </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="../admin_dashboard.html" class="menu-link ">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../view-products.html" class="menu-link ">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../add-product.html" class="menu-link">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../category.html" class="menu-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            
+            <li class="menu-item">
+                <a href="../employee.html" class="menu-link active">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-view.html" class="menu-link">
+                    <i class="fas fa-users-slash"></i>
+                    <span>Employees History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-attendance.html" class="menu-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="employee-payroll.html" class="menu-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="../finance-management/finance-dashboard.html" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="../crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../adduser.html" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
     </div>
-  </div>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+
+    <div class="main-wrapper" id="mainWrapper">
+        <header class="header">
+            <button class="toggle-sidebar" id="toggleSidebarBtn"><i class="fas fa-bars"></i></button>
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="user-name">Admin User</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+                <div class="avatar">A</div>
+            </div>
+        </header>
+
+        <main>
+            <h1><i class="fas fa-user-cog"></i> Manage Employee Profiles</h1>
+            <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
+            
+            <div class="page-layout">
+              <div class="form-section">
+                <h2 id="form-title">Add New Employee</h2>
+                <form id="employeeForm" onsubmit="event.preventDefault(); saveEmployee();">
+                  <label for="employeeName">Full Name</label>
+                  <input type="text" id="employeeName" placeholder="Full Name" required>
+                  
+                  <label for="gender">Gender</label>
+                  <select id="gender" required>
+                    <option value="">-- Select Gender --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                  
+                  <label for="age">Age</label>
+                  <input type="number" id="age" placeholder="Age" required>
+                  
+                  <label for="phone">Phone Number</label>
+                  <input type="number" id="phone" placeholder="Phone Number" required>
+                  
+                  <label for="whatsapp">WhatsApp Number</label>
+                  <input type="number" id="whatsapp" placeholder="WhatsApp Number">
+                  
+                  <label for="hourlyRate">Hourly Rate (₹)</label>
+                  <input type="number" id="hourlyRate" placeholder="e.g., 150" step="0.01" required>
+
+                  <div class="form-actions">
+                    <button type="submit" id="saveEmployeeBtn">Save Employee</button>
+                    <button type="button" id="cancelEditBtn" onclick="cancelEdit()">Cancel Edit</button>
+                  </div>
+                  <p id="status"></p>
+                </form>
+              </div>
+              
+              <div class="list-section">
+                <h2>Existing Employees</h2>
+                <div id="employeeCards" class="employee-cards"></div>
+                <div class="table-container">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Name / Rate</th>
+                          <th>Contact</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="employeeListTableBody"></tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+        </main>
+    </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="../firebase-config.js"></script>
+
   <script>
+    // --- SCRIPT FOR SIDEBAR UI ---
+    // This script does not affect the employee logic.
+    const sidebar = document.getElementById('sidebar');
+    const mainWrapper = document.getElementById('mainWrapper');
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+    const closeBtn = document.getElementById('closeSidebarBtn');
+    const overlay = document.getElementById('overlay');
+
+    function toggleSidebar() {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            sidebar.classList.toggle('mobile-visible');
+            overlay.classList.toggle('visible');
+        } else {
+            sidebar.classList.toggle('collapsed');
+            mainWrapper.classList.toggle('expanded');
+        }
+    }
+    toggleBtn.addEventListener('click', toggleSidebar);
+    closeBtn.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+  </script>
+
+  <script>
+    // --- YOUR ORIGINAL EMPLOYEE MANAGEMENT SCRIPT ---
     let editModeEmployeeId = null;
 
     function saveEmployee() {
@@ -327,7 +376,7 @@
         age: parseInt(document.getElementById('age').value),
         phone: document.getElementById('phone').value.trim(),
         whatsapp: document.getElementById('whatsapp').value.trim(),
-        hourlyRate: parseFloat(document.getElementById('hourlyRate').value) // NEW
+        hourlyRate: parseFloat(document.getElementById('hourlyRate').value)
       };
 
       if (!employeeData.name || !employeeData.hourlyRate || isNaN(employeeData.hourlyRate)) {
@@ -345,8 +394,8 @@
       }
       promise.then(() => {
         document.getElementById('status').innerText = `✅ Employee ${editModeEmployeeId ? 'updated' : 'saved'} successfully!`;
-        cancelEdit();
-        loadEmployeeList();
+        cancelEdit(); // This also clears the form
+        loadEmployeeList(); // Reload the list
       }).catch(error => {
         document.getElementById('status').innerText = "⚠️ Error: " + error.message;
       });
@@ -372,21 +421,26 @@
         snapshot.forEach(doc => {
           const emp = doc.data(); 
           emp.id = doc.id;
+
+          const hourlyRate = emp.hourlyRate ? `₹${parseFloat(emp.hourlyRate).toFixed(2)}` : 'N/A';
+          const statusText = emp.isActive ? 'Active' : 'Inactive';
+          const statusColor = emp.isActive ? 'var(--success-color)' : 'var(--secondary-color)';
+
+          const actionsHTML = `
+            <button onclick="editEmployee('${emp.id}')" style="background-color: var(--info-color);">Edit</button>
+            <button onclick="toggleEmployeeStatus('${emp.id}', ${emp.isActive})" 
+              style="background-color: ${emp.isActive ? 'var(--danger-color)' : 'var(--success-color)'};">
+              ${emp.isActive ? 'Deactivate' : 'Activate'}
+            </button>`;
           
           // Create table row
           const row = document.createElement('tr');
           row.className = emp.isActive ? '' : 'deactivated-row';
           row.innerHTML = `
-            <td><b>${emp.name}</b><br><small>Rate: ₹${emp.hourlyRate || 'N/A'} / hr</small></td>
-            <td>${emp.phone}</td>
-            <td>${emp.isActive ? 'Active' : 'Inactive'}</td>
-            <td class="actions-cell">
-              <button onclick="editEmployee('${emp.id}')" style="background-color: #17a2b8;">Edit</button>
-              <button onclick="toggleEmployeeStatus('${emp.id}', ${emp.isActive})" 
-                style="background-color: ${emp.isActive ? '#dc3545' : '#28a745'};">
-                ${emp.isActive ? 'Deactivate' : 'Activate'}
-              </button>
-            </td>
+            <td><b>${emp.name}</b><br><small>Rate: ${hourlyRate} / hr</small></td>
+            <td><i class="fas fa-phone"></i> ${emp.phone}<br><i class="fab fa-whatsapp"></i> ${emp.whatsapp || 'N/A'}</td>
+            <td><strong style="color: ${statusColor};">${statusText}</strong></td>
+            <td class="actions-cell">${actionsHTML}</td>
           `;
           tableBody.appendChild(row);
           
@@ -395,17 +449,11 @@
           card.className = `employee-card ${emp.isActive ? '' : 'deactivated'}`;
           card.innerHTML = `
             <h3>${emp.name}</h3>
-            <p><strong>Rate:</strong> ₹${emp.hourlyRate || 'N/A'} / hr</p>
+            <p><strong>Rate:</strong> ${hourlyRate} / hr</p>
             <p><strong>Phone:</strong> ${emp.phone}</p>
             <p><strong>WhatsApp:</strong> ${emp.whatsapp || 'N/A'}</p>
-            <p><strong>Status:</strong> ${emp.isActive ? 'Active' : 'Inactive'}</p>
-            <div class="card-actions">
-              <button onclick="editEmployee('${emp.id}')" style="background-color: #17a2b8;">Edit</button>
-              <button onclick="toggleEmployeeStatus('${emp.id}', ${emp.isActive})" 
-                style="background-color: ${emp.isActive ? '#dc3545' : '#28a745'};">
-                ${emp.isActive ? 'Deactivate' : 'Activate'}
-              </button>
-            </div>
+            <p><strong>Status:</strong> <strong style="color: ${statusColor};">${statusText}</strong></p>
+            <div class="card-actions">${actionsHTML}</div>
           `;
           cardsContainer.appendChild(card);
         });
@@ -427,10 +475,7 @@
         document.getElementById('saveEmployeeBtn').innerText = 'Update Employee';
         document.getElementById('cancelEditBtn').style.display = 'inline-block';
         
-        // Scroll to form on mobile
-        if (window.innerWidth < 768) {
-          document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-        }
+        document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
       });
     }
     
@@ -454,10 +499,20 @@
         });
     }
 
-    // Check screen size and adjust layout if needed
+    // Check screen size to adjust button layout in the form if needed
     function checkScreenSize() {
-      const isMobile = window.innerWidth < 768;
-      document.getElementById('cancelEditBtn').style.width = isMobile ? '100%' : 'auto';
+      const isMobile = window.innerWidth < 992;
+      const cancelBtn = document.getElementById('cancelEditBtn');
+      if (cancelBtn) {
+         cancelBtn.style.display = (editModeEmployeeId !== null) ? 'inline-block' : 'none';
+         if(isMobile) {
+            cancelBtn.style.width = '100%';
+            cancelBtn.style.marginLeft = '0';
+         } else {
+            cancelBtn.style.width = 'auto';
+            cancelBtn.style.marginLeft = 'var(--spacing-sm)';
+         }
+      }
     }
 
     window.addEventListener('resize', checkScreenSize);

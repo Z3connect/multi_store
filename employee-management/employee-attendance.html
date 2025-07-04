@@ -6,528 +6,326 @@
   <title>Daily Attendance | Z3connect</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* --- THEME & LAYOUT STYLES --- */
     :root {
       --primary-color: #4361ee;
-      --secondary-color: #3f37c9;
+      --secondary-color: #6c757d;
       --success-color: #28a745;
       --danger-color: #dc3545;
       --warning-color: #ffc107;
       --info-color: #0d6efd;
       --light-color: #f8f9fa;
       --dark-color: #343a40;
-      --border-radius: 8px;
+      
+      --sidebar-width: 250px;
+      --header-height: 70px;
       --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
       --transition-speed: 0.3s;
+      
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
     }
     
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--light-color); color: var(--dark-color); overflow-x: hidden; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: var(--sidebar-width); background: var(--primary-color); color: var(--light-color); padding: 20px 0; transition: all var(--transition-speed) ease; z-index: 1000; overflow-y: auto; box-shadow: var(--box-shadow); }
+    .sidebar.collapsed { left: calc(var(--sidebar-width) * -1); }
+    .sidebar-header { padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+    .logo { font-size: 24px; font-weight: 700; }
+    .logo i { margin-right: 10px; }
+    .close-sidebar { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+    .sidebar-menu { list-style: none; }
+    .menu-link { display: flex; align-items: center; padding: 12px 20px; color: var(--light-color); text-decoration: none; transition: all 0.2s ease; }
+    .menu-link:hover, .menu-link.active { background-color: rgba(255, 255, 255, 0.15); }
+    .menu-link i { width: 25px; text-align: center; margin-right: 15px; font-size: 1.1em; }
+    .menu-section { padding: 10px 20px; font-size: 12px; text-transform: uppercase; opacity: 0.7; margin-top: 15px; }
+    .main-wrapper { margin-left: var(--sidebar-width); transition: margin-left var(--transition-speed) ease; }
+    .main-wrapper.expanded { margin-left: 0; }
     
-    body { 
-      background-color: var(--light-color);
-      color: var(--dark-color);
-      padding: 15px; 
-      font-size: 16px;
-      line-height: 1.5;
-    }
+    /* Navbar styles */
+    .header-navbar { display: flex; justify-content: space-between; align-items: center; height: var(--header-height); padding: 0 var(--spacing-md); background-color: white; box-shadow: var(--box-shadow); position: sticky; top: 0; z-index: 990; }
+    .navbar-left, .navbar-right { display: flex; align-items: center; }
+    .navbar-center { flex-grow: 1; display: flex; justify-content: center; }
+    .toggle-sidebar { background: none; border: none; color: var(--dark-color); font-size: 24px; cursor: pointer; }
+    .navbar-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); text-decoration: none; margin-left: var(--spacing-md); }
+    .user-profile { display: flex; align-items: center; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
     
-    .container { 
-      width: 100%; 
-      margin: 0 auto; 
-      padding: 10px;
-    }
+    /* Main Content Area */
+    main { padding: var(--spacing-lg); }
+    .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+    .overlay.visible { display: block; }
+
+    /* --- PAGE-SPECIFIC STYLES: ATTENDANCE --- */
+    .page-title { font-size: 1.8rem; color: var(--primary-color); margin: 0; display: flex; align-items: center; text-align: center; margin-bottom: var(--spacing-md); }
+    .page-title i { margin-right: 10px; }
+    .date-display { font-weight: 500; color: var(--primary-color); text-align: center; margin-bottom: 20px; font-size: 1.2rem; }
+    .holiday-banner { background-color: #e2f3ff; border-left: 5px solid var(--info-color); color: var(--info-color); padding: 15px; text-align: center; border-radius: var(--border-radius); margin-bottom: 20px; font-size: 0.95rem; display: none; box-shadow: var(--box-shadow); }
+    .holiday-banner i { margin-right: 8px; }
+    .attendance-list { list-style-type: none; padding: 0; }
+    .employee-item { background-color: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; transition: transform 0.2s ease; }
+    .employee-item:hover { transform: translateY(-3px); }
+    .employee-info { margin-bottom: 15px; }
+    .employee-info h4 { font-size: 1.1rem; margin-bottom: 8px; color: var(--dark-color); display: flex; align-items: center; }
+    .employee-info h4 i { margin-right: 8px; color: var(--primary-color); }
+    .employee-info p { font-size: 0.95rem; color: #666; }
+    .actions { display: flex; gap: 10px; width: 100%; }
+    .btn { flex: 1; padding: 12px; border: none; border-radius: var(--border-radius); color: white; cursor: pointer; font-size: 0.95rem; font-weight: 500; min-height: 46px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+    .btn i { margin-right: 8px; }
+    .btn-clock-in { background-color: var(--success-color); }
+    .btn-clock-in:hover { background-color: #218838; }
+    .btn-clock-out { background-color: var(--warning-color); color: black; }
+    .btn-clock-out:hover { background-color: #e0a800; }
+    .btn-absent { background-color: var(--danger-color); }
+    .btn-absent:hover { background-color: #c82333; }
+    .status-present, .status-absent, .status-completed { font-weight: 500; display: flex; align-items: center; }
+    .status-present i, .status-absent i, .status-completed i { margin-right: 5px; }
+    .status-present { color: var(--success-color); }
+    .status-absent { color: var(--danger-color); }
+    .status-completed { color: var(--info-color); }
+    .loading-container { text-align: center; padding: 30px; color: #666; }
+    .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-left: 4px solid var(--primary-color); width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 30px; background-color: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); }
+    .empty-state i { font-size: 3rem; color: #ccc; margin-bottom: 15px; }
+    .empty-state p { color: #666; margin-bottom: 10px; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(3px); }
+    .modal-content { background-color: white; margin: 10% auto; padding: 25px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); width: 90%; max-width: 450px; position: relative; animation: modalOpen 0.3s ease forwards; }
+    @keyframes modalOpen { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    .close-btn { position: absolute; top: 15px; right: 15px; color: #aaa; font-size: 24px; font-weight: bold; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s ease; }
+    .close-btn:hover { background-color: #f0f0f0; color: #333; }
+    .modal-header { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+    .modal-header h3 { font-size: 1.3rem; color: var(--danger-color); margin: 0; display: flex; align-items: center; }
+    .modal-header h3 i { margin-right: 10px; }
+    .modal-body p { margin-bottom: 15px; display: flex; align-items: center; }
+    .modal-body p i { margin-right: 8px; color: var(--primary-color); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #555; }
+    .form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: var(--border-radius); font-size: 1rem; transition: border-color 0.2s ease; }
+    .form-control:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1); }
+    .modal-footer { margin-top: 20px; text-align: right; }
     
-    .header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    
-    .back-button {
-      background: none;
-      border: none;
-      color: var(--primary-color);
-      font-size: 24px;
-      cursor: pointer;
-      margin-right: 10px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .page-title {
-      font-size: 1.8rem;
-      color: var(--primary-color);
-      margin: 0;
-      display: flex;
-      align-items: center;
-    }
-    
-    .page-title i {
-      margin-right: 10px;
-    }
-    
-    .user-info {
-      background-color: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 12px 15px;
-      margin-bottom: 20px;
-      font-size: 0.85rem;
-      color: #666;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    
-    .date-display {
-      font-weight: 500;
-      color: var(--primary-color);
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 1.2rem;
-    }
-    
-    .holiday-banner { 
-      background-color: #e2f3ff; 
-      border-left: 5px solid var(--info-color);
-      color: var(--info-color); 
-      padding: 15px; 
-      text-align: center; 
-      border-radius: var(--border-radius); 
-      margin-bottom: 20px; 
-      font-size: 0.95rem;
-      display: none;
-      box-shadow: var(--box-shadow);
-    }
-    
-    .holiday-banner i {
-      margin-right: 8px;
-    }
-    
-    .attendance-list { 
-      list-style-type: none; 
-      padding: 0; 
-    }
-    
-    .employee-item { 
-      background-color: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 15px;
-      margin-bottom: 15px;
-      display: flex; 
-      flex-direction: column; 
-      transition: transform 0.2s ease;
-    }
-    
-    .employee-item:hover {
-      transform: translateY(-3px);
-    }
-    
-    .employee-info {
-      margin-bottom: 15px;
-    }
-    
-    .employee-info h4 { 
-      font-size: 1.1rem;
-      margin-bottom: 8px;
-      color: var(--dark-color);
-      display: flex;
-      align-items: center;
-    }
-    
-    .employee-info h4 i {
-      margin-right: 8px;
-      color: var(--primary-color);
-    }
-    
-    .employee-info p { 
-      font-size: 0.95rem; 
-      color: #666; 
-    }
-    
-    .actions {
-      display: flex;
-      gap: 10px;
-      width: 100%;
-    }
-    
-    .btn {
-      flex: 1;
-      padding: 12px; 
-      border: none; 
-      border-radius: var(--border-radius); 
-      color: white; 
-      cursor: pointer; 
-      font-size: 0.95rem;
-      font-weight: 500;
-      min-height: 46px; /* Better touch target */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-    
-    .btn i {
-      margin-right: 8px;
-    }
-    
-    .btn-clock-in { 
-      background-color: var(--success-color); 
-    }
-    
-    .btn-clock-in:hover {
-      background-color: #218838;
-    }
-    
-    .btn-clock-out { 
-      background-color: var(--warning-color); 
-      color: black; 
-    }
-    
-    .btn-clock-out:hover {
-      background-color: #e0a800;
-    }
-    
-    .btn-absent { 
-      background-color: var(--danger-color); 
-    }
-    
-    .btn-absent:hover {
-      background-color: #c82333;
-    }
-    
-    .status-present { 
-      color: var(--success-color); 
-      font-weight: 500; 
-      display: flex;
-      align-items: center;
-    }
-    
-    .status-present i, 
-    .status-absent i, 
-    .status-completed i {
-      margin-right: 5px;
-    }
-    
-    .status-absent { 
-      color: var(--danger-color); 
-      font-weight: 500; 
-      display: flex;
-      align-items: center;
-    }
-    
-    .status-completed { 
-      color: var(--info-color); 
-      font-weight: 500; 
-      display: flex;
-      align-items: center;
-    }
-    
-    /* Loading state */
-    .loading-container {
-      text-align: center;
-      padding: 30px;
-      color: #666;
-    }
-    
-    .spinner {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      border-radius: 50%;
-      border-left: 4px solid var(--primary-color);
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 15px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 30px;
-      background-color: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-    }
-    
-    .empty-state i {
-      font-size: 3rem;
-      color: #ccc;
-      margin-bottom: 15px;
-    }
-    
-    .empty-state p {
-      color: #666;
-      margin-bottom: 10px;
-    }
-    
-    /* Modal Styles */
-    .modal { 
-      display: none; 
-      position: fixed; 
-      z-index: 1000; 
-      left: 0; 
-      top: 0; 
-      width: 100%; 
-      height: 100%; 
-      overflow: auto; 
-      background-color: rgba(0,0,0,0.5); 
-      backdrop-filter: blur(3px);
-    }
-    
-    .modal-content { 
-      background-color: white; 
-      margin: 10% auto; 
-      padding: 25px; 
-      border-radius: var(--border-radius); 
-      box-shadow: var(--box-shadow);
-      width: 90%; 
-      max-width: 450px;
-      position: relative;
-      animation: modalOpen 0.3s ease forwards;
-    }
-    
-    @keyframes modalOpen {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .close-btn { 
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      color: #aaa; 
-      font-size: 24px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: all 0.2s ease;
-    }
-    
-    .close-btn:hover {
-      background-color: #f0f0f0;
-      color: #333;
-    }
-    
-    .modal-header {
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .modal-header h3 {
-      font-size: 1.3rem;
-      color: var(--danger-color);
-      margin: 0;
-      display: flex;
-      align-items: center;
-    }
-    
-    .modal-header h3 i {
-      margin-right: 10px;
-    }
-    
-    .modal-body p {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .modal-body p i {
-      margin-right: 8px;
-      color: var(--primary-color);
-    }
-    
-    .form-group {
-      margin-bottom: 15px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: #555;
-    }
-    
-    .form-control {
-      width: 100%; 
-      padding: 12px 15px; 
-      border: 1px solid #ddd;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      transition: border-color 0.2s ease;
-    }
-    
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-    }
-    
-    .modal-footer {
-      margin-top: 20px;
-      text-align: right;
-    }
-    
-    /* Media queries for larger screens */
     @media (min-width: 600px) {
-      body {
-        padding: 20px;
-      }
-      
-      .container {
-        max-width: 800px;
-      }
-      
-      .page-title {
-        font-size: 2rem;
-      }
-      
-      .employee-item {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-      }
-      
-      .employee-info {
-        margin-bottom: 0;
-      }
-      
-      .actions {
-        width: auto;
-        min-width: 300px;
-      }
-      
-      .user-info {
-        padding: 15px 20px;
-        font-size: 0.9rem;
-      }
+      .employee-item { flex-direction: row; justify-content: space-between; align-items: center; padding: 20px; }
+      .employee-info { margin-bottom: 0; }
+      .actions { width: auto; min-width: 300px; }
+    }
+    @media (max-width: 768px) {
+        .sidebar { left: calc(var(--sidebar-width) * -1); }
+        .sidebar.mobile-visible { left: 0; }
+        .main-wrapper { margin-left: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <button class="back-button" onclick="window.location.href='employee-dashboard.html'">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <h1 class="page-title"><i class="fas fa-user-clock"></i> Daily Attendance</h1>
-    </div>
-    
-<div class="user-info" style="display: none;">      <div>Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): <span id="currentDateTime">2025-07-02 14:12:07</span></div>
-      <div>Current User's Login: <span id="currentUser">santhoshsharuk</span></div>
-    </div>
-    
-    <div class="date-display">
-      <i class="fas fa-calendar-day"></i> Today: <span id="todayDate"></span>
-    </div>
-    
-    <div id="holidayBanner" class="holiday-banner">
-      <i class="fas fa-glass-cheers"></i> Today is a holiday: <span id="holidayName"></span>. Attendance tracking is disabled.
-    </div>
-    
-    <div id="attendanceContainer">
-      <div class="loading-container">
-        <div class="spinner"></div>
-        <p>Loading attendance data...</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Absent Modal -->
-  <div id="absentModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeAbsentModal()">&times;</span>
-      
-      <div class="modal-header">
-        <h3><i class="fas fa-user-times"></i> Mark as Absent</h3>
-      </div>
-      
-      <div class="modal-body">
-        <p><i class="fas fa-user"></i> Employee: <b id="modalEmployeeName"></b></p>
-        
-        <div class="form-group">
-          <label for="absentReason"><i class="fas fa-clipboard-list"></i> Reason</label>
-          <select id="absentReason" class="form-control">
-            <option value="Sick Leave">Sick Leave</option>
-            <option value="Personal Leave">Personal Leave</option>
-            <option value="Uninformed">Uninformed</option>
-            <option value="Other">Other</option>
-          </select>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                <span>Z3connect</span>
+            </div>
+            <button class="toggle-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         
-        <div class="form-group">
-          <label for="absentNotes"><i class="fas fa-sticky-note"></i> Additional Notes</label>
-          <input type="text" id="absentNotes" class="form-control" placeholder="Enter any additional details...">
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="../admin_dashboard.html" class="menu-link ">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../view-products.html" class="menu-link ">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../add-product.html" class="menu-link">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../category.html" class="menu-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            
+            <li class="menu-item">
+                <a href="employee.html" class="menu-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-view.html" class="menu-link">
+                    <i class="fas fa-users-slash"></i>
+                    <span>Employees History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-attendance.html" class="menu-link active">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-payroll.html" class="menu-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="finance-management/finance-dashboard.html" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="../crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../adduser.html" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+
+    <div class="main-wrapper" id="mainWrapper">
+        <header class="header-navbar">
+            <div class="navbar-left">
+                <button class="toggle-sidebar" id="toggleSidebarBtn"><i class="fas fa-bars"></i></button>
+                <a href="admin_dashboard.html" class="navbar-brand">Z3connect POS</a>
+            </div>
+            <div class="navbar-right">
+                <div class="user-profile">
+                    <div class="avatar">A</div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <h1 class="page-title"><i class="fas fa-user-clock"></i> Daily Attendance</h1>
+    
+            <div class="date-display">
+              <i class="fas fa-calendar-day"></i> Today: <span id="todayDate"></span>
+            </div>
+            
+            <div id="holidayBanner" class="holiday-banner">
+              <i class="fas fa-glass-cheers"></i> Today is a holiday: <span id="holidayName"></span>. Attendance tracking is disabled.
+            </div>
+            
+            <div id="attendanceContainer">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <p>Loading attendance data...</p>
+              </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Absent Modal (placed outside main content for stacking context) -->
+    <div id="absentModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeAbsentModal()">×</span>
+        <div class="modal-header">
+          <h3><i class="fas fa-user-times"></i> Mark as Absent</h3>
+        </div>
+        <div class="modal-body">
+          <p><i class="fas fa-user"></i> Employee: <b id="modalEmployeeName"></b></p>
+          <div class="form-group">
+            <label for="absentReason"><i class="fas fa-clipboard-list"></i> Reason</label>
+            <select id="absentReason" class="form-control">
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Personal Leave">Personal Leave</option>
+              <option value="Uninformed">Uninformed</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="absentNotes"><i class="fas fa-sticky-note"></i> Additional Notes</label>
+            <input type="text" id="absentNotes" class="form-control" placeholder="Enter any additional details...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-absent" onclick="markAbsent()">
+            <i class="fas fa-check"></i> Confirm Absent
+          </button>
         </div>
       </div>
-      
-      <div class="modal-footer">
-        <button class="btn btn-absent" onclick="markAbsent()">
-          <i class="fas fa-check"></i> Confirm Absent
-        </button>
-      </div>
     </div>
-  </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="../firebase-config.js"></script>
-  <script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="../firebase-config.js"></script>
+    
+    <script>
+      // --- SCRIPT FOR SIDEBAR UI ---
+      const sidebar = document.getElementById('sidebar');
+      const mainWrapper = document.getElementById('mainWrapper');
+      const toggleBtn = document.getElementById('toggleSidebarBtn');
+      const closeBtn = document.getElementById('closeSidebarBtn');
+      const overlay = document.getElementById('overlay');
+
+      function toggleSidebar() {
+          const isMobile = window.innerWidth <= 768;
+          if (isMobile) {
+              sidebar.classList.toggle('mobile-visible');
+              overlay.classList.toggle('visible');
+          } else {
+              sidebar.classList.toggle('collapsed');
+              mainWrapper.classList.toggle('expanded');
+          }
+      }
+      toggleBtn.addEventListener('click', toggleSidebar);
+      if(closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+      if(overlay) overlay.addEventListener('click', toggleSidebar);
+    </script>
+    
+    <script>
+    // --- YOUR ORIGINAL ATTENDANCE SCRIPT (UNCHANGED) ---
     // Initialize variables and constants
     const today = new Date();
     const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
     let currentModalEmployee = { id: null, name: null };
     
-    // Format and display current date and time in the specified format
-    function updateDateTime() {
-      const now = new Date();
-      
-      // Format: YYYY-MM-DD HH:MM:SS
-      const year = now.getUTCFullYear();
-      const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(now.getUTCDate()).padStart(2, '0');
-      const hours = String(now.getUTCHours()).padStart(2, '0');
-      const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-      const seconds = String(now.getUTCSeconds()).padStart(2, '0');
-      
-      const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      document.getElementById('currentDateTime').textContent = formattedDate;
-    }
-    
-    // Update the date time every second
-    setInterval(updateDateTime, 1000);
-    
-    // Check for user login info
-    function checkUserLogin() {
-      // In a real app, this would check the session storage or cookies
-      // For this demo, we'll use the hardcoded value
-      const username = sessionStorage.getItem('currentUser') || 'santhoshsharuk';
-      document.getElementById('currentUser').textContent = username;
-    }
-
     // Helper function to generate attendance document ID
     function getTodayAttendanceDocId(employeeId) {
       return `${employeeId}_${todayString}`;
@@ -573,7 +371,6 @@
           return;
         }
         
-        // Start building the attendance list
         let listHTML = '<ul class="attendance-list">';
         
         for (const empDoc of employeesSnapshot.docs) {
@@ -635,46 +432,23 @@
         
       } catch (error) {
         console.error("Error loading attendance:", error);
-        container.innerHTML = `
-          <div class="empty-state" style="color: #dc3545;">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>Error loading attendance data</p>
-            <p>${error.message}</p>
-          </div>
-        `;
+        container.innerHTML = `<div class="empty-state" style="color: #dc3545;"><i class="fas fa-exclamation-triangle"></i><p>Error loading attendance data</p><p>${error.message}</p></div>`;
       }
     }
 
-    // Clock In function
     async function clockIn(employeeId, employeeName) {
       try {
         const attendanceData = {
-          employeeId, 
-          employeeName, 
-          status: 'Present',
+          employeeId, employeeName, status: 'Present',
           date: firebase.firestore.Timestamp.fromDate(today),
-          clockIn: new Date(), 
-          clockOut: null
+          clockIn: new Date(), clockOut: null
         };
-        
-        // Show loading state
         const itemElement = document.getElementById(`item-${employeeId}`);
         if (itemElement) {
-          const actionsDiv = itemElement.querySelector('.actions');
-          actionsDiv.innerHTML = `
-            <div style="text-align: center; width: 100%;">
-              <div class="spinner" style="display: inline-block;"></div>
-              <p>Processing...</p>
-            </div>
-          `;
+          itemElement.querySelector('.actions').innerHTML = `<div style="text-align: center; width: 100%;"><div class="spinner" style="display: inline-block;"></div><p>Processing...</p></div>`;
         }
-        
         await db.collection("attendance").doc(getTodayAttendanceDocId(employeeId)).set(attendanceData);
-        
-        // Show success notification
         showNotification(`${employeeName} clocked in successfully at ${new Date().toLocaleTimeString()}`, 'success');
-        
-        // Refresh the attendance list
         loadAttendance();
       } catch (error) {
         console.error("Error clocking in:", error);
@@ -683,34 +457,16 @@
       }
     }
 
-    // Clock Out function
     async function clockOut(employeeId) {
       try {
-        // Show loading state
         const itemElement = document.getElementById(`item-${employeeId}`);
         if (itemElement) {
-          const actionsDiv = itemElement.querySelector('.actions');
-          actionsDiv.innerHTML = `
-            <div style="text-align: center; width: 100%;">
-              <div class="spinner" style="display: inline-block;"></div>
-              <p>Processing...</p>
-            </div>
-          `;
+          itemElement.querySelector('.actions').innerHTML = `<div style="text-align: center; width: 100%;"><div class="spinner" style="display: inline-block;"></div><p>Processing...</p></div>`;
         }
-        
-        await db.collection("attendance").doc(getTodayAttendanceDocId(employeeId)).update({
-          clockOut: new Date(), 
-          status: 'Completed'
-        });
-        
-        // Get employee name for notification
+        await db.collection("attendance").doc(getTodayAttendanceDocId(employeeId)).update({ clockOut: new Date(), status: 'Completed' });
         const employeeDoc = await db.collection("employees").doc(employeeId).get();
         const employeeName = employeeDoc.exists ? employeeDoc.data().name : 'Employee';
-        
-        // Show success notification
         showNotification(`${employeeName} clocked out successfully at ${new Date().toLocaleTimeString()}`, 'success');
-        
-        // Refresh the attendance list
         loadAttendance();
       } catch (error) {
         console.error("Error clocking out:", error);
@@ -719,7 +475,6 @@
       }
     }
 
-    // Open the Absent Modal
     function openAbsentModal(employeeId, employeeName) {
       currentModalEmployee = { id: employeeId, name: employeeName };
       document.getElementById('modalEmployeeName').innerText = employeeName;
@@ -728,37 +483,23 @@
       document.getElementById('absentModal').style.display = 'block';
     }
 
-    // Close the Absent Modal
     function closeAbsentModal() {
       document.getElementById('absentModal').style.display = 'none';
     }
 
-    // Mark employee as absent
     async function markAbsent() {
       try {
         const { id, name } = currentModalEmployee;
         const reason = document.getElementById('absentReason').value;
         const notes = document.getElementById('absentNotes').value.trim();
-
         const attendanceData = {
-          employeeId: id, 
-          employeeName: name, 
-          status: 'Absent',
-          reason: reason, 
-          notes: notes,
-          date: firebase.firestore.Timestamp.fromDate(today),
-          clockIn: null, 
-          clockOut: null
+          employeeId: id, employeeName: name, status: 'Absent',
+          reason: reason, notes: notes, date: firebase.firestore.Timestamp.fromDate(today),
+          clockIn: null, clockOut: null
         };
-        
         await db.collection("attendance").doc(getTodayAttendanceDocId(id)).set(attendanceData);
-        
-        // Close modal and refresh data
         closeAbsentModal();
-        
-        // Show success notification
         showNotification(`${name} marked as absent (${reason})`, 'success');
-        
         loadAttendance();
       } catch (error) {
         console.error("Error marking absent:", error);
@@ -768,86 +509,30 @@
       }
     }
     
-    // Show notification
     function showNotification(message, type = 'info') {
-      // Create notification element if it doesn't exist
       let notification = document.getElementById('notification');
       if (!notification) {
         notification = document.createElement('div');
         notification.id = 'notification';
-        notification.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          padding: 15px 20px;
-          border-radius: 8px;
-          color: white;
-          font-weight: 500;
-          z-index: 1001;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          display: flex;
-          align-items: center;
-          max-width: 350px;
-          transform: translateY(100px);
-          opacity: 0;
-          transition: all 0.3s ease;
-        `;
+        notification.style.cssText = `position: fixed; bottom: 20px; right: 20px; padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; z-index: 1001; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; max-width: 350px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease;`;
         document.body.appendChild(notification);
       }
-      
-      // Set background color based on type
       let bgColor, icon;
       switch(type) {
-        case 'success':
-          bgColor = '#28a745';
-          icon = 'fas fa-check-circle';
-          break;
-        case 'error':
-          bgColor = '#dc3545';
-          icon = 'fas fa-exclamation-circle';
-          break;
-        default:
-          bgColor = '#0d6efd';
-          icon = 'fas fa-info-circle';
+        case 'success': bgColor = '#28a745'; icon = 'fas fa-check-circle'; break;
+        case 'error': bgColor = '#dc3545'; icon = 'fas fa-exclamation-circle'; break;
+        default: bgColor = '#0d6efd'; icon = 'fas fa-info-circle';
       }
-      
       notification.style.backgroundColor = bgColor;
       notification.innerHTML = `<i class="${icon}" style="margin-right: 10px;"></i> ${message}`;
-      
-      // Show the notification with animation
-      setTimeout(() => {
-        notification.style.transform = 'translateY(0)';
-        notification.style.opacity = '1';
-      }, 10);
-      
-      // Auto hide after 4 seconds
-      setTimeout(() => {
-        notification.style.transform = 'translateY(100px)';
-        notification.style.opacity = '0';
-      }, 4000);
+      setTimeout(() => { notification.style.transform = 'translateY(0)'; notification.style.opacity = '1'; }, 10);
+      setTimeout(() => { notification.style.transform = 'translateY(100px)'; notification.style.opacity = '0'; }, 4000);
     }
     
-    // Close modal when clicking outside
-    window.onclick = function(event) {
-      const modal = document.getElementById('absentModal');
-      if (event.target === modal) {
-        closeAbsentModal();
-      }
-    }
+    window.onclick = function(event) { if (event.target === document.getElementById('absentModal')) { closeAbsentModal(); } }
+    document.addEventListener('keydown', function(event) { if (event.key === 'Escape') { closeAbsentModal(); } });
     
-    // Escape key to close modal
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') {
-        closeAbsentModal();
-      }
-    });
-    
-    // Initialize page
-    window.onload = function() {
-      updateDateTime();
-      checkUserLogin();
-      loadAttendance();
-    };
+    window.onload = function() { loadAttendance(); };
   </script>
 </body>
 </html>

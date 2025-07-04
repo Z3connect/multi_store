@@ -3,297 +3,306 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Analytics | POS</title>
+  <title>Employee Analytics | Z3connect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Base styles (mobile-first) */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    /* --- THEME & LAYOUT STYLES --- */
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-color: #dee2e6;
+        
+        --sidebar-width: 250px;
+        --header-height: 70px;
+        --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        --border-radius: 8px;
+        --transition-speed: 0.3s;
+
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--light-color); color: var(--dark-color); overflow-x: hidden; }
+
+    /* --- STANDARD LAYOUT: SIDEBAR, NAVBAR, MAIN --- */
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: var(--sidebar-width); background: var(--primary-color); color: var(--light-color); padding: 20px 0; transition: all var(--transition-speed) ease; z-index: 1000; overflow-y: auto; box-shadow: var(--box-shadow); }
+    .sidebar.collapsed { left: calc(var(--sidebar-width) * -1); }
+    .sidebar-header { padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+    .logo { font-size: 24px; font-weight: 700; }
+    .logo i { margin-right: 10px; }
+    .close-sidebar { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+    .sidebar-menu { list-style: none; }
+    .menu-link { display: flex; align-items: center; padding: 12px 20px; color: var(--light-color); text-decoration: none; transition: all 0.2s ease; }
+    .menu-link:hover, .menu-link.active { background-color: rgba(255, 255, 255, 0.15); }
+    .menu-link i { width: 25px; text-align: center; margin-right: 15px; font-size: 1.1em; }
+    .menu-section { padding: 10px 20px; font-size: 12px; text-transform: uppercase; opacity: 0.7; margin-top: 15px; }
+    .main-wrapper { margin-left: var(--sidebar-width); transition: margin-left var(--transition-speed) ease; }
+    .main-wrapper.expanded { margin-left: 0; }
+    .header-navbar { display: flex; justify-content: space-between; align-items: center; height: var(--header-height); padding: 0 var(--spacing-md); background-color: white; box-shadow: var(--box-shadow); position: sticky; top: 0; z-index: 990; }
+    .navbar-left, .navbar-right { display: flex; align-items: center; }
+    .toggle-sidebar { background: none; border: none; color: var(--dark-color); font-size: 24px; cursor: pointer; }
+    .navbar-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); text-decoration: none; margin-left: var(--spacing-md); }
+    .user-profile { display: flex; align-items: center; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    main { padding: var(--spacing-lg); }
+    .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+    .overlay.visible { display: block; }
     
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-      padding: 10px; 
-      background-color: #f4f7f6; 
-      font-size: 16px;
-      line-height: 1.4;
-    }
+    /* --- PAGE-SPECIFIC STYLES: ANALYTICS --- */
+    .page-title { font-size: 1.8rem; color: var(--dark-color); text-align: center; margin-bottom: var(--spacing-sm); }
+    .back-link { display: block; text-align: center; margin-bottom: var(--spacing-lg); color: var(--primary-color); text-decoration: none; font-weight: bold; }
+    .back-link:hover { text-decoration: underline; }
+    .section { background: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); box-shadow: var(--box-shadow); }
+    .section h2 { margin-top: 0; padding-bottom: 10px; border-bottom: 2px solid var(--primary-color); font-size: 1.4rem; display: flex; align-items: center; gap: 10px; margin-bottom: var(--spacing-md); }
+    .controls { background: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); }
+    .controls label { display: block; margin-bottom: 8px; font-weight: bold; }
+    .controls select { width: 100%; padding: 12px; border-radius: var(--border-radius); border: 1px solid var(--border-color); font-size: 1rem; background-color: white; }
+    .controls select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2); }
+    .details-view { display: none; flex-direction: column; gap: var(--spacing-lg); }
+    .stats-grid { display: grid; grid-template-columns: 1fr; gap: var(--spacing-md); }
+    .stat-card { background: var(--light-color); padding: var(--spacing-md); border-radius: var(--border-radius); text-align: center; border: 1px solid var(--border-color); }
+    .stat-card h4 { margin: 0 0 8px 0; color: #666; font-size: 0.85em; text-transform: uppercase; }
+    .stat-card p { font-size: 1.8em; font-weight: bold; margin: 0; color: var(--primary-color); }
+    .details-grid { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+    .chart-container { width: 100%; max-width: 300px; margin: 10px auto; }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; vertical-align: middle; }
+    th { background-color: var(--light-color); }
+    .status-present { color: var(--success-color); font-weight: bold; }
+    .status-absent { color: var(--danger-color); font-weight: bold; }
+    .status-completed { color: var(--primary-color); font-weight: bold; }
+    #placeholder { text-align: center; padding: 20px; background: #fff; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
     
-    .container { 
-      width: 100%;
-      margin: 0 auto;
-    }
-    
-    h1 { 
-      text-align: center; 
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .back-link {
-      text-align: center;
-      margin-bottom: 1rem;
-      display: block;
-    }
-    
-    .controls { 
-      margin-bottom: 20px; 
-    }
-    
-    .controls label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-    
-    .controls select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-      font-size: 1rem;
-      background-color: white;
-    }
-    
-    .section { 
-      background: #fff; 
-      border: 1px solid #ddd; 
-      border-radius: 8px; 
-      padding: 15px; 
-      margin-bottom: 20px;
-    }
-    
-    h2 { 
-      margin-top: 0; 
-      padding-bottom: 10px; 
-      border-bottom: 1px solid #eee; 
-      font-size: 1.2rem;
-    }
-    
-    /* Table Styles - Mobile First */
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      margin-top: 15px; 
-      font-size: 0.9rem;
-    }
-    
-    th, td { 
-      border: 1px solid #ddd; 
-      padding: 8px; 
-      text-align: left; 
-      vertical-align: top; 
-    }
-    
-    th { 
-      background-color: #f2f2f2; 
-    }
-    
-    /* Make tables responsive on small screens */
-    .table-responsive {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Dashboard Styles - Mobile First */
-    .details-view { 
-      display: none; 
-      flex-direction: column; 
-      gap: 20px; 
-    }
-    
-    .stats-grid { 
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 15px; 
-    }
-    
-    .stat-card { 
-      background: #f8f9fa; 
-      padding: 15px; 
-      border-radius: 8px; 
-      text-align: center; 
-      border: 1px solid #e0e0e0; 
-    }
-    
-    .stat-card h4 { 
-      margin: 0 0 8px 0; 
-      color: #666; 
-      font-size: 0.85em; 
-      text-transform: uppercase; 
-    }
-    
-    .stat-card p { 
-      font-size: 1.8em; 
-      font-weight: bold; 
-      margin: 0; 
-      color: #007bff; 
-    }
-    
-    .details-grid { 
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .chart-container { 
-      width: 100%;
-      max-width: 300px; 
-      margin: 10px auto; 
-    }
-    
-    .status-present { 
-      color: #155724; 
-      font-weight: bold; 
-    }
-    
-    .status-absent { 
-      color: #721c24; 
-      font-weight: bold; 
-    }
-    
-    .status-completed { 
-      color: #004085; 
-      font-weight: bold; 
-    }
-    
-    /* Placeholder styling */
-    #placeholder {
-      text-align: center;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-    
-    /* Media queries for larger screens */
     @media (min-width: 600px) {
-      body {
-        padding: 20px;
-      }
-      
-      .container {
-        max-width: 90%;
-      }
-      
-      h1 {
-        font-size: 1.8rem;
-      }
-      
-      h2 {
-        font-size: 1.4rem;
-      }
-      
-      .section {
-        padding: 20px;
-      }
-      
-      .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      
-      .chart-container {
-        max-width: 350px;
-      }
-      
-      table {
-        font-size: 1rem;
-      }
-      
-      th, td {
-        padding: 10px;
-      }
+        .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        .chart-container { max-width: 350px; }
+        table { font-size: 1rem; }
     }
-    
     @media (min-width: 900px) {
-      .container {
-        max-width: 1100px;
-      }
-      
-      h1 {
-        font-size: 2rem;
-      }
-      
-      .details-grid {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        gap: 25px;
-      }
-      
-      .chart-container {
-        max-width: 100%;
-      }
+        .details-grid { display: grid; grid-template-columns: 1fr 2fr; gap: var(--spacing-lg); }
+        .chart-container { max-width: 100%; }
+    }
+    @media (max-width: 768px) {
+        .sidebar { left: calc(var(--sidebar-width) * -1); }
+        .sidebar.mobile-visible { left: 0; }
+        .main-wrapper { margin-left: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📈 Employee Analytics</h1>
-    <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
-    
-    <div class="controls">
-      <label for="employeeSelect">Select an Employee to View Details:</label>
-      <select id="employeeSelect" onchange="loadEmployeeDetails()"></select>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-store"></i><span>Z3connect</span></div>
+            <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="../admin_dashboard.html" class="menu-link ">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../view-products.html" class="menu-link ">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../add-product.html" class="menu-link">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../category.html" class="menu-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            
+            <li class="menu-item">
+                <a href="/employee-management/employee.html" class="menu-link ">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-view.html" class="menu-link active">
+                    <i class="fas fa-users-slash"></i>
+                    <span>Employees History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-attendance.html" class="menu-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="employee-payroll.html" class="menu-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="../finance-management/finance-dashboard.html" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="../crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../adduser.html" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
     </div>
     
-    <div id="placeholder"><p>Please select an employee to view their dashboard.</p></div>
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
 
-    <div id="detailsView" class="details-view">
-      <!-- STATS CARDS -->
-      <div class="section stats-grid">
-        <div class="stat-card">
-          <h4>Total Paid</h4>
-          <p id="totalPaidStat">₹0</p>
-        </div>
-        <div class="stat-card">
-          <h4>Total Hours Worked</h4>
-          <p id="totalHoursStat">0</p>
-        </div>
-        <div class="stat-card">
-          <h4>Attendance Rate</h4>
-          <p id="attendanceRateStat">0%</p>
-        </div>
-      </div>
-      
-      <!-- Chart and Payroll History Grid -->
-      <div class="details-grid">
-        <div class="section">
-          <h2>Attendance Summary</h2>
-          <div class="chart-container">
-            <canvas id="attendanceChart"></canvas>
-          </div>
-        </div>
-        
-        <div class="section">
-          <h2>Payroll History</h2>
-          <div class="table-responsive">
-            <table id="payrollTable">
-              <thead><tr><th>Period / Date</th><th>Amount Paid</th><th>Date Paid</th><th>Notes</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+    <div class="main-wrapper" id="mainWrapper">
+        <header class="header-navbar">
+            <div class="navbar-left">
+                <button class="toggle-sidebar" id="toggleSidebarBtn"><i class="fas fa-bars"></i></button>
+                <a href="admin_dashboard.html" class="navbar-brand">Z3connect POS</a>
+            </div>
+            <div class="navbar-right">
+                <div class="user-profile">
+                    <div class="avatar">A</div>
+                </div>
+            </div>
+        </header>
 
-      <!-- Full Attendance History Table -->
-      <div class="section">
-        <h2>Detailed Attendance History</h2>
-        <div class="table-responsive">
-          <table id="attendanceTable">
-            <thead><tr><th>Date</th><th>Status</th><th>Details</th><th>Hours Worked</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+        <main>
+            <h1 class="page-title">📈 Employee Analytics</h1>
+            <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
+            
+            <div class="controls">
+              <label for="employeeSelect">Select an Employee to View Details:</label>
+              <select id="employeeSelect" onchange="loadEmployeeDetails()"></select>
+            </div>
+            
+            <div id="placeholder"><p>Please select an employee to view their dashboard.</p></div>
+
+            <div id="detailsView" class="details-view">
+              <div class="section stats-grid">
+                <div class="stat-card">
+                  <h4>Total Paid</h4>
+                  <p id="totalPaidStat">₹0</p>
+                </div>
+                <div class="stat-card">
+                  <h4>Total Hours Worked</h4>
+                  <p id="totalHoursStat">0</p>
+                </div>
+                <div class="stat-card">
+                  <h4>Attendance Rate</h4>
+                  <p id="attendanceRateStat">0%</p>
+                </div>
+              </div>
+              
+              <div class="details-grid">
+                <div class="section">
+                  <h2><i class="fas fa-chart-pie"></i> Attendance Summary</h2>
+                  <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                  </div>
+                </div>
+                
+                <div class="section">
+                  <h2><i class="fas fa-history"></i> Payroll History</h2>
+                  <div class="table-responsive">
+                    <table id="payrollTable">
+                      <thead><tr><th>Period / Date</th><th>Amount Paid</th><th>Date Paid</th><th>Notes</th></tr></thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section">
+                <h2><i class="fas fa-calendar-alt"></i> Detailed Attendance History</h2>
+                <div class="table-responsive">
+                  <table id="attendanceTable">
+                    <thead><tr><th>Date</th><th>Status</th><th>Details</th><th>Hours Worked</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+        </main>
     </div>
-  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="../firebase-config.js"></script>
+  
   <script>
+    // --- SCRIPT FOR SIDEBAR UI ---
+    const sidebar = document.getElementById('sidebar');
+    const mainWrapper = document.getElementById('mainWrapper');
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+    const closeBtn = document.getElementById('closeSidebarBtn');
+    const overlay = document.getElementById('overlay');
+
+    function toggleSidebar() {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            sidebar.classList.toggle('mobile-visible');
+            overlay.classList.toggle('visible');
+        } else {
+            sidebar.classList.toggle('collapsed');
+            mainWrapper.classList.toggle('expanded');
+        }
+    }
+    toggleBtn.addEventListener('click', toggleSidebar);
+    if(closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+    if(overlay) overlay.addEventListener('click', toggleSidebar);
+  </script>
+
+  <script>
+    // --- YOUR ORIGINAL ANALYTICS SCRIPT (UNCHANGED) ---
     let attendanceChartInstance;
 
     async function loadEmployeeDropdown() {
@@ -316,10 +325,9 @@
         return;
       }
       
-      detailsView.style.display = 'flex'; // Use flex for the layout
+      detailsView.style.display = 'flex';
       placeholder.style.display = 'none';
       
-      // Reset views
       document.querySelector('#attendanceTable tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
       document.querySelector('#payrollTable tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading...</td></tr>';
       document.getElementById('totalPaidStat').innerText = '...';
@@ -336,7 +344,6 @@
         let presentDays = 0;
         let absentDays = 0;
 
-        // Process Payroll Data
         const payrollTableBody = document.querySelector('#payrollTable tbody');
         payrollTableBody.innerHTML = '';
         if(payrollSnapshot.empty) {
@@ -355,7 +362,6 @@
                 });
         }
         
-        // Process Attendance Data
         const attTableBody = document.querySelector('#attendanceTable tbody');
         attTableBody.innerHTML = '';
         if (attSnapshot.empty) {
@@ -389,7 +395,6 @@
                 });
         }
 
-        // Final Calculations & UI Update
         const totalDays = presentDays + absentDays;
         const attendanceRate = totalDays > 0 ? ((presentDays / totalDays) * 100) : 0;
         
@@ -415,7 +420,7 @@
                 labels: ['Present', 'Absent'],
                 datasets: [{
                     data: [present, absent],
-                    backgroundColor: ['#28a745', '#dc3545'],
+                    backgroundColor: ['var(--success-color)', 'var(--danger-color)'],
                     borderColor: '#fff',
                     borderWidth: 2
                 }]
@@ -428,7 +433,7 @@
                         position: 'bottom',
                         labels: {
                             boxWidth: 12,
-                            padding: 10
+                            padding: 20
                         }
                     }
                 }
