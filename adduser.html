@@ -3,52 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add User | Admin</title>
+    <title>Add User | Z3connect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Base styles from admin_dashboard.html */
         :root {
             --primary-color: #4361ee;
             --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
             --text-color: #333;
+            --light-text: #f8f9fa;
             --bg-color: #f8f9fa;
-            --danger-color: #f44336;
-            --success-color: #4caf50;
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             --border-radius: 8px;
-            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+            --danger-color: #e63946;
+            --success-color: #2e9c33;
         }
-        body {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            padding: 20px;
         }
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            color: var(--light-text);
+            padding: 20px 0;
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: var(--box-shadow);
+        }
+
+        .sidebar.collapsed {
+            left: calc(var(--sidebar-width) * -1);
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--light-text);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 0 30px 30px 0;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding-left: 25px;
+        }
+
+        .menu-link i {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .menu-section {
+            padding: 10px 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            margin-top: 15px;
+        }
+
+        /* Main content styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: margin var(--transition-speed) ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* Header styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: var(--header-height);
+            padding: 0 20px;
+            background-color: white;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info {
+            margin-right: 10px;
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Styles for Add User Page Content */
+        .content-card {
+            max-width: 700px;
+            margin: 0 auto;
             background: white;
             padding: 30px;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
         }
-        h1 {
+        
+        .page-title {
             text-align: center;
             color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        .back-link {
-            display: block;
-            text-align: center;
             margin-bottom: 25px;
-            color: var(--primary-color);
+            font-size: 1.8rem;
         }
+
+        .page-title i {
+            margin-right: 10px;
+        }
+        
         .form-group { margin-bottom: 20px; }
-        .form-label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; }
         .form-control {
             width: 100%;
             padding: 12px;
             border-radius: var(--border-radius);
             border: 1px solid #ddd;
             font-size: 1rem;
+            transition: border-color 0.2s;
         }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
         .btn {
             width: 100%;
             padding: 14px;
@@ -59,65 +226,245 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
-        #status { margin-top: 20px; font-weight: 500; text-align: center; }
-        #status.success { color: var(--success-color); }
-        #status.error { color: var(--danger-color); }
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        #status { margin-top: 20px; font-weight: 500; text-align: center; padding: 10px; border-radius: var(--border-radius); }
+        #status.success { color: var(--success-color); background-color: #e8f5e9; }
+        #status.error { color: var(--danger-color); background-color: #ffebee; }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar { left: calc(var(--sidebar-width) * -1); }
+            .sidebar.mobile-visible { left: 0; }
+            .main-content { margin-left: 0; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+            .overlay.visible { display: block; }
+        }
+        
+        @media (max-width: 480px) {
+            .header { padding: 0 10px; }
+            .user-info { display: none; }
+            .content-card { padding: 20px; }
+        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-user-plus"></i> Add New User</h1>
-        <a href="admin_dashboard.html" class="back-link">← Back to Dashboard</a>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                <span>Z3connect</span>
+            </div>
+            <button class="toggle-sidebar" id="closeSidebar" style="color: white; font-size: 24px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="admin_dashboard.html" class="menu-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="view-products.html" class="menu-link">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="add-product.html" class="menu-link">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="category.html" class="menu-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            <li class="menu-item">
+                <a href="employee-management/employee-dashboard.html" class="menu-link">
+                    <i class="fas fa-users"></i>
+                    <span>Employee Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee.html" class="menu-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee-attendance.html" class="menu-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee-payroll.html" class="menu-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="finance-management/finance-dashboard.html" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="adduser.html" class="menu-link active">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <button class="toggle-sidebar" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="user-name">z</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+                <div class="avatar">Z</div>
+            </div>
+        </div>
+        
+        <!-- CONTENT FROM adduser.html STARTS HERE -->
+        <div class="content-card">
+            <h1 class="page-title"><i class="fas fa-user-plus"></i> Add New User</h1>
+    
+            <form id="addUserForm" onsubmit="createUser(event)">
+                <div class="form-group">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" id="fullName" class="form-control" placeholder="Enter user's full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="form-control" placeholder="Enter user's email address" required>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="userRole" class="form-label">Role</label>
+                    <select id="userRole" class="form-control" required>
+                        <option value="">-- Select a Role --</option>
+                        <option value="Admin">Administrator</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Cashier">Cashier</option>
+                    </select>
+                </div>
+                <button type="submit" id="addUserBtn" class="btn">Create User</button>
+            </form>
+    
+            <div id="status"></div>
+        </div>
+        <!-- CONTENT FROM adduser.html ENDS HERE -->
 
-        <form id="addUserForm" onsubmit="createUser(event)">
-            <div class="form-group">
-                <label for="fullName" class="form-label">Full Name</label>
-                <input type="text" id="fullName" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" class="form-control" required minlength="6">
-            </div>
-            <div class="form-group">
-                <label for="userRole" class="form-label">Role</label>
-                <select id="userRole" class="form-control" required>
-                    <option value="">-- Select a Role --</option>
-                    <option value="Admin">Administrator</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Cashier">Cashier</option>
-                </select>
-            </div>
-            <button type="submit" id="addUserBtn" class="btn">Create User</button>
-        </form>
-
-        <div id="status"></div>
     </div>
 
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
+
     <script>
+        // Sidebar toggle script
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+            const overlay = document.getElementById('overlay');
+            
+            const isMobile = () => window.innerWidth <= 768;
+            
+            toggleSidebarBtn.addEventListener('click', function() {
+                if (isMobile()) {
+                    sidebar.classList.toggle('mobile-visible');
+                    overlay.classList.toggle('visible');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                }
+            });
+            
+            closeSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-visible');
+                overlay.classList.remove('visible');
+            });
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-visible');
+                overlay.classList.remove('visible');
+            });
+        });
+
+        // Add User logic
         const addUserForm = document.getElementById('addUserForm');
         const statusEl = document.getElementById('status');
+        const addUserBtn = document.getElementById('addUserBtn');
 
-        // IMPORTANT: In a real app, protect this page.
-        // This function is a placeholder for real security checks.
         function checkAdminStatus() {
             firebase.auth().onAuthStateChanged(user => {
                 if (user) {
-                    // Normally, you would check the user's role from Firestore here.
-                    // For now, we'll just log that the check should happen.
-                    console.log("Admin check: User is logged in. Need to verify role.");
+                    console.log("Admin check: User is logged in. Role verification is needed for production.");
                 } else {
-                    // If no user is logged in, redirect them to the login page.
-                    console.log("Admin check: No user logged in. Redirecting.");
-                    // window.location.href = 'user-login.html';
+                    console.log("Admin check: No user logged in. Redirecting would be appropriate.");
+                    // In a real app, you'd uncomment this line:
+                    // window.location.href = 'login.html'; 
                 }
             });
         }
@@ -132,17 +479,18 @@
             const password = document.getElementById('password').value;
             const role = document.getElementById('userRole').value;
             
-            statusEl.textContent = 'Creating user...';
+            addUserBtn.textContent = 'Creating...';
+            addUserBtn.disabled = true;
+            statusEl.textContent = '';
             statusEl.className = '';
 
-            // Step 1: Create the user in Firebase Authentication
+            // Step 1: Create user in Firebase Authentication
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
                     console.log('User created in Auth:', user.uid);
 
                     // Step 2: Store user's role and name in Firestore
-                    // The document ID in Firestore will be the same as the user's UID in Auth
                     return db.collection("users").doc(user.uid).set({
                         name: fullName,
                         email: email,
@@ -151,13 +499,18 @@
                     });
                 })
                 .then(() => {
-                    statusEl.textContent = '✅ User created successfully!';
+                    statusEl.textContent = 'User created successfully!';
                     statusEl.className = 'success';
                     addUserForm.reset();
                 })
                 .catch((error) => {
-                    statusEl.textContent = `❌ Error: ${error.message}`;
+                    statusEl.textContent = `Error: ${error.message}`;
                     statusEl.className = 'error';
+                    console.error("Error creating user:", error);
+                })
+                .finally(() => {
+                    addUserBtn.textContent = 'Create User';
+                    addUserBtn.disabled = false;
                 });
         }
     </script>

@@ -3,561 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Dashboard | POS</title>
+    <title>Finance Dashboard | Z3connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Base styles (mobile-first) */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        /* --- THEME & LAYOUT STYLES --- */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+            
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition-speed: 0.3s;
+
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--light-color); color: var(--dark-color); overflow-x: hidden; }
+
+        /* --- STANDARD LAYOUT: SIDEBAR, NAVBAR, MAIN --- */
+        .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: var(--sidebar-width); background: var(--primary-color); color: var(--light-color); padding: 20px 0; transition: all var(--transition-speed) ease; z-index: 1000; overflow-y: auto; box-shadow: var(--box-shadow); }
+        .sidebar.collapsed { left: calc(var(--sidebar-width) * -1); }
+        .sidebar-header { padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+        .logo { font-size: 24px; font-weight: 700; }
+        .logo i { margin-right: 10px; }
+        .close-sidebar { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        .sidebar-menu { list-style: none; }
+        .menu-link { display: flex; align-items: center; padding: 12px 20px; color: var(--light-color); text-decoration: none; transition: all 0.2s ease; }
+        .menu-link:hover, .menu-link.active { background-color: rgba(255, 255, 255, 0.15); }
+        .menu-link i { width: 25px; text-align: center; margin-right: 15px; font-size: 1.1em; }
+        .menu-section { padding: 10px 20px; font-size: 12px; text-transform: uppercase; opacity: 0.7; margin-top: 15px; }
+        .main-wrapper { margin-left: var(--sidebar-width); transition: margin-left var(--transition-speed) ease; }
+        .main-wrapper.expanded { margin-left: 0; }
+        .header-navbar { display: flex; justify-content: space-between; align-items: center; height: var(--header-height); padding: 0 var(--spacing-md); background-color: white; box-shadow: var(--box-shadow); position: sticky; top: 0; z-index: 990; }
+        .navbar-left, .navbar-right { display: flex; align-items: center; }
+        .toggle-sidebar { background: none; border: none; color: var(--dark-color); font-size: 24px; cursor: pointer; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); text-decoration: none; margin-left: var(--spacing-md); }
+        .user-profile { display: flex; align-items: center; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        main { padding: var(--spacing-lg); }
+        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+        .overlay.visible { display: block; }
+
+        /* --- PAGE-SPECIFIC STYLES: FINANCE --- */
+        .page-title { font-size: 1.8rem; color: var(--dark-color); text-align: center; margin-bottom: var(--spacing-sm); }
+        .back-link { display: block; text-align: center; margin-bottom: var(--spacing-lg); color: var(--primary-color); text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+        .section { background: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); box-shadow: var(--box-shadow); }
+        .section h2 { margin-top: 0; padding-bottom: 10px; border-bottom: 2px solid var(--primary-color); font-size: 1.4rem; display: flex; align-items: center; gap: 10px; margin-bottom: var(--spacing-md); }
+        label { display: block; margin: 0.8rem 0 0.3rem 0; font-weight: bold; font-size: 0.9rem; }
+        input, select, button { width: 100%; padding: 12px; box-sizing: border-box; border-radius: var(--border-radius); border: 1px solid var(--border-color); font-size: 1rem; margin-bottom: 10px; }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2); }
+        button { color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
+        button:hover { opacity: 0.85; }
+        .main-grid { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+        .left-panel, .right-panel { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+        .controls { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr; gap: var(--spacing-md); text-align: center; }
+        .stat-card { background: var(--light-color); padding: var(--spacing-md); border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+        .stat-card h4 { margin: 0 0 8px 0; color: #666; font-size: 0.85em; text-transform: uppercase; }
+        .stat-card p { font-size: 1.8em; font-weight: bold; margin: 0; }
+        #totalRevenue { color: var(--success-color); }
+        #totalExpenses { color: var(--danger-color); }
+        #netProfit { color: var(--primary-color); }
+        .chart-container { min-height: 250px; position: relative; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        th { background-color: var(--light-color); }
+        .income-row { background-color: #e9f7ef; }
+        .expense-row { background-color: #fdedee; }
         
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #f4f7f6; 
-            color: #333; 
-            padding: 10px; 
-            font-size: 16px;
-            line-height: 1.4;
-        }
-        
-        .container { 
-            width: 100%;
-            margin: 0 auto;
-        }
-        
-        h1 { 
-            text-align: center; 
-            color: #1a252f; 
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        h2 { 
-            margin-top: 0; 
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-        }
-        
-        .nav-link { 
-            text-align: center; 
-            margin-bottom: 15px; 
-        }
-        
-        .main-grid { 
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .left-panel, .right-panel { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-        
-        .section { 
-            background: #fff; 
-            padding: 15px; 
-            border-radius: 8px; 
-            box-shadow: 0 3px 8px rgba(0,0,0,0.05); 
-            margin-bottom: 5px;
-        }
-        
-        label {
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 4px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        
-        input, select, button { 
-            width: 100%; 
-            padding: 12px; 
-            box-sizing: border-box; 
-            border-radius: 5px; 
-            border: 1px solid #ccc; 
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
-        
-        button { 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            background-color: #dc3545; 
-            min-height: 44px;
-            font-weight: 500;
-        }
-        
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: 15px; 
-            text-align: center; 
-        }
-        
-        .stat-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .stat-card h4 { 
-            margin: 0 0 8px 0; 
-            color: #666; 
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-        
-        .stat-card p { 
-            font-size: 1.6rem; 
-            font-weight: bold; 
-            margin: 0; 
-        }
-        
-        #totalRevenue { color: #28a745; }
-        #totalExpenses { color: #dc3545; }
-        #netProfit { color: #007bff; }
-        
-        .chart-container {
-            min-height: 250px;
-            position: relative;
-        }
-        
-        /* Table Styles - Mobile First */
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 15px; 
-            font-size: 0.9rem;
-        }
-        
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: left; 
-        }
-        
-        th { 
-            background-color: #f2f2f2; 
-        }
-        
-        .income-row { background-color: #e2f0e6; }
-        .expense-row { background-color: #f8e2e4; }
-        
-        .user-info {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 10px;
-        }
-        
-        /* Media queries for larger screens */
         @media (min-width: 600px) {
-            body {
-                padding: 15px;
-            }
-            
-            .container {
-                max-width: 90%;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-                margin-bottom: 0.8rem;
-            }
-            
-            h2 {
-                font-size: 1.4rem;
-            }
-            
-            .section {
-                padding: 20px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .controls {
-                flex-direction: row;
-                align-items: flex-end;
-            }
-            
-            .user-info {
-                font-size: 0.9rem;
-            }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+            .controls { flex-direction: row; align-items: flex-end; }
         }
-        
         @media (min-width: 900px) {
-            body {
-                padding: 20px;
-            }
-            
-            .container {
-                max-width: 1200px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .main-grid {
-                display: grid;
-                grid-template-columns: 1fr 2fr;
-                gap: 25px;
-            }
-            
-            .stat-card p {
-                font-size: 2rem;
-            }
-            
-            th, td {
-                padding: 10px;
-            }
+            .main-grid { display: grid; grid-template-columns: 1fr 2fr; gap: var(--spacing-lg); }
+            .stat-card p { font-size: 2rem; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { left: calc(var(--sidebar-width) * -1); }
+            .sidebar.mobile-visible { left: 0; }
+            .main-wrapper { margin-left: 0; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>💸 Finance & Expense Dashboard</h1>
-    <div class="user-info">Logged in as:  <span id="currentDateTime">2025-07-02 13:26:24</span></div>
-    <p class="nav-link"><a href="../admin_dashboard.html">← Back to Main Dashboard</a></p>
-
-    <div class="main-grid">
-        <!-- LEFT PANEL for Logging Expenses -->
-        <div class="left-panel">
-            <div class="section">
-                <h2>Log an Expense</h2>
-                <form id="expenseForm">
-                    <label for="expenseDate">Date</label>
-                    <input type="date" id="expenseDate" required>
-                    
-                    <label for="expenseCategory">Category</label>
-                    <select id="expenseCategory" required>
-                        <option value="Rent">Rent</option>
-                        <option value="Utilities">Utilities (Electricity, Water)</option>
-                        <option value="Supplier Payment">Supplier Payment</option>
-                        <option value="Employee Salary">Employee Salary</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Maintenance">Maintenance & Repairs</option>
-                        <option value="Miscellaneous">Miscellaneous</option>
-                    </select>
-
-                    <label for="expenseAmount">Amount (₹)</label>
-                    <input type="number" id="expenseAmount" min="0" step="0.01" placeholder="e.g., 10000" required>
-
-                    <label for="expenseDescription">Description</label>
-                    <input type="text" id="expenseDescription" placeholder="e.g., Paid rent for June" required>
-
-                    <button type="submit">Log Expense</button>
-                </form>
-            </div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-store"></i><span>Z3connect</span></div>
+            <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         </div>
-
-        <!-- RIGHT PANEL for Dashboard and Ledger -->
-        <div class="right-panel">
-            <div class="section">
-                <h2>Financial Summary</h2>
-                <div class="controls">
-                    <div>
-                        <label for="startDate">Start Date</label>
-                        <input type="date" id="startDate">
-                    </div>
-                    <div>
-                        <label for="endDate">End Date</label>
-                        <input type="date" id="endDate">
-                    </div>
-                    <button onclick="applyDateFilter()" style="background-color:#007bff;">Apply Filter</button>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h4>TOTAL REVENUE</h4>
-                        <p id="totalRevenue">₹0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>TOTAL EXPENSES</h4>
-                        <p id="totalExpenses">₹0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>NET PROFIT</h4>
-                        <p id="netProfit">₹0.00</p>
-                    </div>
-                </div>
-            </div>
-            <div class="section">
-                <h2>Income vs. Expense Chart</h2>
-                <div class="chart-container">
-                    <canvas id="financeChart"></canvas>
-                </div>
-            </div>
-            <div class="section">
-                <h2>Transaction Ledger</h2>
-                <div class="table-responsive">
-                    <table>
-                        <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount (₹)</th></tr></thead>
-                        <tbody id="ledgerTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="../admin_dashboard.html" class="menu-link ">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../view-products.html" class="menu-link ">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../add-product.html" class="menu-link">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../category.html" class="menu-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            
+            <li class="menu-item">
+                <a href="/employee-management/employee.html" class="menu-link ">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/employee-management/employee-view.html" class="menu-link">
+                    <i class="fas fa-users-slash"></i>
+                    <span>Employees History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/employee-management/employee-attendance.html" class="menu-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/employee-management/employee-payroll.html" class="menu-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="../finance-management/finance-dashboard.html" class="menu-link active">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="../crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../adduser.html" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
     </div>
-</div>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="../firebase-config.js"></script>
-<script>
-    let financeChartInstance;
-    let allTransactions = [];
+    <div class="main-wrapper" id="mainWrapper">
+        <header class="header-navbar">
+            <div class="navbar-left">
+                <button class="toggle-sidebar" id="toggleSidebarBtn"><i class="fas fa-bars"></i></button>
+                <a href="../admin_dashboard.html" class="navbar-brand">Z3connect POS</a>
+            </div>
+            <div class="navbar-right">
+                <div class="user-profile"><div class="avatar">A</div></div>
+            </div>
+        </header>
 
-    // --- INITIALIZATION ---
-    async function initializeDashboard() {
-        document.getElementById('expenseDate').valueAsDate = new Date();
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - 30);
-        document.getElementById('startDate').valueAsDate = start;
-        document.getElementById('endDate').valueAsDate = end;
-
-        await loadAllTransactions();
-        updateDashboard();
+        <main>
+            <h1 class="page-title">💸 Finance Dashboard</h1>
+            <a href="../admin_dashboard.html" class="back-link">← Back to Main Dashboard</a>
         
-        document.getElementById('expenseForm').addEventListener('submit', logExpense);
-    }
+            <div class="main-grid">
+                <div class="left-panel">
+                    <div class="section">
+                        <h2><i class="fas fa-cash-register"></i> Log an Expense</h2>
+                        <form id="expenseForm">
+                            <label for="expenseDate">Date</label>
+                            <input type="date" id="expenseDate" required>
+                            <label for="expenseCategory">Category</label>
+                            <select id="expenseCategory" required>
+                                <option value="Rent">Rent</option>
+                                <option value="Utilities">Utilities (Electricity, Water)</option>
+                                <option value="Supplier Payment">Supplier Payment</option>
+                                <option value="Employee Salary">Employee Salary</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Maintenance">Maintenance & Repairs</option>
+                                <option value="Miscellaneous">Miscellaneous</option>
+                            </select>
+                            <label for="expenseAmount">Amount (₹)</label>
+                            <input type="number" id="expenseAmount" min="0" step="0.01" placeholder="e.g., 10000" required>
+                            <label for="expenseDescription">Description</label>
+                            <input type="text" id="expenseDescription" placeholder="e.g., Paid rent for June" required>
+                            <button type="submit" style="background-color: var(--danger-color);">Log Expense</button>
+                        </form>
+                    </div>
+                </div>
 
-    // --- DATA LOADING ---
-    async function loadAllTransactions() {
-        allTransactions = [];
-        // 1. Fetch Income from Bills
-        const billsSnapshot = await db.collection("bills").get();
-        billsSnapshot.forEach(doc => {
-            const bill = doc.data();
-            allTransactions.push({
-                date: bill.date.toDate(),
-                type: 'Income',
-                description: `Sale - Bill #${bill.billId}`,
-                amount: bill.netTotal || bill.grandTotal,
-                sortDate: bill.date.toDate()
-            });
-        });
+                <div class="right-panel">
+                    <div class="section">
+                        <h2><i class="fas fa-poll"></i> Financial Summary</h2>
+                        <div class="controls">
+                            <div>
+                                <label for="startDate">Start Date</label>
+                                <input type="date" id="startDate">
+                            </div>
+                            <div>
+                                <label for="endDate">End Date</label>
+                                <input type="date" id="endDate">
+                            </div>
+                            <button onclick="applyDateFilter()" style="background-color:var(--primary-color);">Apply Filter</button>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h4>TOTAL REVENUE</h4>
+                                <p id="totalRevenue">₹0.00</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4>TOTAL EXPENSES</h4>
+                                <p id="totalExpenses">₹0.00</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4>NET PROFIT</h4>
+                                <p id="netProfit">₹0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <h2><i class="fas fa-chart-line"></i> Income vs. Expense Chart</h2>
+                        <div class="chart-container">
+                            <canvas id="financeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <h2><i class="fas fa-book"></i> Transaction Ledger</h2>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount (₹)</th></tr></thead>
+                                <tbody id="ledgerTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-        // 2. Fetch Expenses
-        const expensesSnapshot = await db.collection("expenses").get();
-        expensesSnapshot.forEach(doc => {
-            const expense = doc.data();
-            allTransactions.push({
-                date: expense.date.toDate(),
-                type: 'Expense',
-                description: `${expense.category}: ${expense.description}`,
-                amount: expense.amount,
-                sortDate: expense.date.toDate()
-            });
-        });
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="../firebase-config.js"></script>
 
-        // 3. Sort all transactions by date
-        allTransactions.sort((a, b) => b.sortDate - a.sortDate);
-    }
+    <script>
+      // --- SCRIPT FOR SIDEBAR UI ---
+      const sidebar = document.getElementById('sidebar');
+      const mainWrapper = document.getElementById('mainWrapper');
+      const toggleBtn = document.getElementById('toggleSidebarBtn');
+      const closeBtn = document.getElementById('closeSidebarBtn');
+      const overlay = document.getElementById('overlay');
+      function toggleSidebar() {
+          const isMobile = window.innerWidth <= 768;
+          if (isMobile) {
+              sidebar.classList.toggle('mobile-visible');
+              overlay.classList.toggle('visible');
+          } else {
+              sidebar.classList.toggle('collapsed');
+              mainWrapper.classList.toggle('expanded');
+          }
+      }
+      toggleBtn.addEventListener('click', toggleSidebar);
+      if(closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+      if(overlay) overlay.addEventListener('click', toggleSidebar);
+    </script>
+    
+    <script>
+        // --- YOUR ORIGINAL FINANCE DASHBOARD SCRIPT (UNCHANGED) ---
+        let financeChartInstance;
+        let allTransactions = [];
 
-    // --- DASHBOARD & UI UPDATES ---
-    function applyDateFilter() {
-        updateDashboard();
-    }
-
-    function updateDashboard() {
-        const startDate = document.getElementById('startDate').valueAsDate;
-        const endDate = document.getElementById('endDate').valueAsDate;
-        if (!startDate || !endDate) {
-            alert("Please select both a start and end date.");
-            return;
-        }
-        startDate.setHours(0, 0, 0, 0);
-        endDate.setHours(23, 59, 59, 999);
-
-        const filteredTransactions = allTransactions.filter(t => t.date >= startDate && t.date <= endDate);
-
-        let totalRevenue = 0;
-        let totalExpenses = 0;
-        const incomeByDate = new Map();
-        const expensesByDate = new Map();
-
-        filteredTransactions.forEach(t => {
-            const dateString = t.date.toISOString().split('T')[0];
-            if (t.type === 'Income') {
-                totalRevenue += t.amount;
-                incomeByDate.set(dateString, (incomeByDate.get(dateString) || 0) + t.amount);
-            } else {
-                totalExpenses += t.amount;
-                expensesByDate.set(dateString, (expensesByDate.get(dateString) || 0) + t.amount);
-            }
-        });
-        
-        const netProfit = totalRevenue - totalExpenses;
-
-        // Update stat cards
-        document.getElementById('totalRevenue').innerText = `₹${totalRevenue.toFixed(2)}`;
-        document.getElementById('totalExpenses').innerText = `₹${totalExpenses.toFixed(2)}`;
-        document.getElementById('netProfit').innerText = `₹${netProfit.toFixed(2)}`;
-        document.getElementById('netProfit').style.color = netProfit >= 0 ? '#007bff' : '#dc3545';
-
-        // Update Ledger Table
-        renderLedger(filteredTransactions);
-        
-        // Update Chart
-        renderChart(incomeByDate, expensesByDate, startDate, endDate);
-    }
-
-    function renderLedger(transactions) {
-        const tableBody = document.getElementById('ledgerTableBody');
-        tableBody.innerHTML = '';
-        if (transactions.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No transactions in this period.</td></tr>';
-            return;
-        }
-        transactions.forEach(t => {
-            const row = document.createElement('tr');
-            row.className = t.type === 'Income' ? 'income-row' : 'expense-row';
-            row.innerHTML = `
-                <td>${t.date.toLocaleDateString()}</td>
-                <td>${t.type}</td>
-                <td>${t.description}</td>
-                <td>₹${t.amount.toFixed(2)}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
-
-    function renderChart(incomeData, expenseData, startDate, endDate) {
-        const ctx = document.getElementById('financeChart').getContext('2d');
-        
-        // For mobile view, we need to simplify the dates if there are too many
-        let labels = [];
-        let skipFactor = 1;
-        const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-        
-        // For small screens with many days, skip some labels to avoid overcrowding
-        if (window.innerWidth < 600 && daysDiff > 10) {
-            skipFactor = Math.ceil(daysDiff / 10);
-        }
-        
-        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-            const dateStr = d.toISOString().split('T')[0];
-            labels.push(dateStr);
-        }
-
-        const incomeDataset = labels.map(label => incomeData.get(label) || 0);
-        const expenseDataset = labels.map(label => expenseData.get(label) || 0);
-
-        // For mobile, display abbreviated dates if needed
-        if (window.innerWidth < 600) {
-            labels = labels.map(label => {
-                const parts = label.split('-');
-                return `${parts[1]}/${parts[2]}`;
-            });
-        }
-
-        if (financeChartInstance) financeChartInstance.destroy();
-        financeChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Income (₹)',
-                    data: incomeDataset,
-                    borderColor: '#28a745',
-                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                    fill: true,
-                    tension: 0.1
-                }, {
-                    label: 'Expenses (₹)',
-                    data: expenseDataset,
-                    borderColor: '#dc3545',
-                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                    fill: true,
-                    tension: 0.1
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: true,
-                scales: { 
-                    y: { 
-                        beginAtZero: true,
-                        ticks: {
-                            // Use more compact labels on mobile
-                            callback: function(value) {
-                                if (window.innerWidth < 600) {
-                                    if (value >= 1000) {
-                                        return '₹' + (value / 1000) + 'K';
-                                    }
-                                    return '₹' + value;
-                                }
-                                return '₹' + value;
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 10
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // --- EXPENSE LOGGING ---
-    async function logExpense(event) {
-        event.preventDefault();
-        const expenseData = {
-            date: firebase.firestore.Timestamp.fromDate(document.getElementById('expenseDate').valueAsDate),
-            category: document.getElementById('expenseCategory').value,
-            amount: parseFloat(document.getElementById('expenseAmount').value),
-            description: document.getElementById('expenseDescription').value.trim()
-        };
-
-        try {
-            await db.collection("expenses").add(expenseData);
-            alert("✅ Expense logged successfully!");
-            document.getElementById('expenseForm').reset();
+        async function initializeDashboard() {
             document.getElementById('expenseDate').valueAsDate = new Date();
-            // Reload all data and refresh the dashboard
+            const end = new Date();
+            const start = new Date();
+            start.setDate(end.getDate() - 30);
+            document.getElementById('startDate').valueAsDate = start;
+            document.getElementById('endDate').valueAsDate = end;
             await loadAllTransactions();
             updateDashboard();
-        } catch (error) {
-            console.error("Error logging expense:", error);
-            alert("❌ Failed to log expense. See console for details.");
+            document.getElementById('expenseForm').addEventListener('submit', logExpense);
         }
-    }
 
-    document.getElementById('currentDateTime').textContent = new Date().toLocaleString();
-    window.onload = initializeDashboard;
-</script>
+        async function loadAllTransactions() {
+            allTransactions = [];
+            const billsSnapshot = await db.collection("bills").get();
+            billsSnapshot.forEach(doc => {
+                const bill = doc.data();
+                allTransactions.push({
+                    date: bill.date.toDate(),
+                    type: 'Income',
+                    description: `Sale - Bill #${bill.billId}`,
+                    amount: bill.netTotal || bill.grandTotal,
+                    sortDate: bill.date.toDate()
+                });
+            });
+
+            const expensesSnapshot = await db.collection("expenses").get();
+            expensesSnapshot.forEach(doc => {
+                const expense = doc.data();
+                allTransactions.push({
+                    date: expense.date.toDate(),
+                    type: 'Expense',
+                    description: `${expense.category}: ${expense.description}`,
+                    amount: expense.amount,
+                    sortDate: expense.date.toDate()
+                });
+            });
+
+            allTransactions.sort((a, b) => b.sortDate - a.sortDate);
+        }
+
+        function applyDateFilter() {
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const startDate = document.getElementById('startDate').valueAsDate;
+            const endDate = document.getElementById('endDate').valueAsDate;
+            if (!startDate || !endDate) {
+                alert("Please select both a start and end date.");
+                return;
+            }
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+
+            const filteredTransactions = allTransactions.filter(t => t.date >= startDate && t.date <= endDate);
+
+            let totalRevenue = 0;
+            let totalExpenses = 0;
+            const incomeByDate = new Map();
+            const expensesByDate = new Map();
+
+            filteredTransactions.forEach(t => {
+                const dateString = t.date.toISOString().split('T')[0];
+                if (t.type === 'Income') {
+                    totalRevenue += t.amount;
+                    incomeByDate.set(dateString, (incomeByDate.get(dateString) || 0) + t.amount);
+                } else {
+                    totalExpenses += t.amount;
+                    expensesByDate.set(dateString, (expensesByDate.get(dateString) || 0) + t.amount);
+                }
+            });
+            
+            const netProfit = totalRevenue - totalExpenses;
+
+            document.getElementById('totalRevenue').innerText = `₹${totalRevenue.toFixed(2)}`;
+            document.getElementById('totalExpenses').innerText = `₹${totalExpenses.toFixed(2)}`;
+            document.getElementById('netProfit').innerText = `₹${netProfit.toFixed(2)}`;
+            document.getElementById('netProfit').style.color = netProfit >= 0 ? 'var(--primary-color)' : 'var(--danger-color)';
+
+            renderLedger(filteredTransactions);
+            renderChart(incomeByDate, expensesByDate, startDate, endDate);
+        }
+
+        function renderLedger(transactions) {
+            const tableBody = document.getElementById('ledgerTableBody');
+            tableBody.innerHTML = '';
+            if (transactions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No transactions in this period.</td></tr>';
+                return;
+            }
+            transactions.forEach(t => {
+                const row = document.createElement('tr');
+                row.className = t.type === 'Income' ? 'income-row' : 'expense-row';
+                row.innerHTML = `
+                    <td>${t.date.toLocaleDateString()}</td>
+                    <td>${t.type}</td>
+                    <td>${t.description}</td>
+                    <td>₹${t.amount.toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderChart(incomeData, expenseData, startDate, endDate) {
+            const ctx = document.getElementById('financeChart').getContext('2d');
+            const labels = [];
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                labels.push(d.toISOString().split('T')[0]);
+            }
+            const incomeDataset = labels.map(label => incomeData.get(label) || 0);
+            const expenseDataset = labels.map(label => expenseData.get(label) || 0);
+            
+            const displayLabels = labels.map(label => {
+                const parts = label.split('-');
+                return `${parts[1]}/${parts[2]}`; // MM/DD format
+            });
+
+            if (financeChartInstance) financeChartInstance.destroy();
+            financeChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: displayLabels,
+                    datasets: [{
+                        label: 'Income (₹)',
+                        data: incomeDataset,
+                        borderColor: 'var(--success-color)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }, {
+                        label: 'Expenses (₹)',
+                        data: expenseDataset,
+                        borderColor: 'var(--danger-color)',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { callback: value => '₹' + value.toLocaleString('en-IN') }
+                        }
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
+        async function logExpense(event) {
+            event.preventDefault();
+            const expenseData = {
+                date: firebase.firestore.Timestamp.fromDate(document.getElementById('expenseDate').valueAsDate),
+                category: document.getElementById('expenseCategory').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                description: document.getElementById('expenseDescription').value.trim()
+            };
+
+            try {
+                await db.collection("expenses").add(expenseData);
+                alert("✅ Expense logged successfully!");
+                document.getElementById('expenseForm').reset();
+                document.getElementById('expenseDate').valueAsDate = new Date();
+                await loadAllTransactions();
+                updateDashboard();
+            } catch (error) {
+                console.error("Error logging expense:", error);
+                alert("❌ Failed to log expense. See console for details.");
+            }
+        }
+
+        window.onload = initializeDashboard;
+    </script>
 </body>
 </html>

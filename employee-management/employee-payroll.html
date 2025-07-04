@@ -3,279 +3,303 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Payroll | POS</title>
+  <title>Employee Payroll | Z3connect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Base styles (mobile-first) */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    /* --- THEME & LAYOUT STYLES --- */
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --purple-color: #6f42c1;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --border-color: #dee2e6;
+        
+        --sidebar-width: 250px;
+        --header-height: 70px;
+        --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        --border-radius: 8px;
+        --transition-speed: 0.3s;
+
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--light-color); color: var(--dark-color); overflow-x: hidden; }
+
+    /* --- STANDARD LAYOUT: SIDEBAR, NAVBAR, MAIN --- */
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: var(--sidebar-width); background: var(--primary-color); color: var(--light-color); padding: 20px 0; transition: all var(--transition-speed) ease; z-index: 1000; overflow-y: auto; box-shadow: var(--box-shadow); }
+    .sidebar.collapsed { left: calc(var(--sidebar-width) * -1); }
+    .sidebar-header { padding: 0 20px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+    .logo { font-size: 24px; font-weight: 700; }
+    .logo i { margin-right: 10px; }
+    .close-sidebar { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+    .sidebar-menu { list-style: none; }
+    .menu-link { display: flex; align-items: center; padding: 12px 20px; color: var(--light-color); text-decoration: none; transition: all 0.2s ease; }
+    .menu-link:hover, .menu-link.active { background-color: rgba(255, 255, 255, 0.15); }
+    .menu-link i { width: 25px; text-align: center; margin-right: 15px; font-size: 1.1em; }
+    .menu-section { padding: 10px 20px; font-size: 12px; text-transform: uppercase; opacity: 0.7; margin-top: 15px; }
+    .main-wrapper { margin-left: var(--sidebar-width); transition: margin-left var(--transition-speed) ease; }
+    .main-wrapper.expanded { margin-left: 0; }
+    .header-navbar { display: flex; justify-content: space-between; align-items: center; height: var(--header-height); padding: 0 var(--spacing-md); background-color: white; box-shadow: var(--box-shadow); position: sticky; top: 0; z-index: 990; }
+    .navbar-left, .navbar-right { display: flex; align-items: center; }
+    .toggle-sidebar { background: none; border: none; color: var(--dark-color); font-size: 24px; cursor: pointer; }
+    .navbar-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); text-decoration: none; margin-left: var(--spacing-md); }
+    .user-profile { display: flex; align-items: center; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    main { padding: var(--spacing-lg); }
+    .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+    .overlay.visible { display: block; }
+
+    /* --- PAGE-SPECIFIC STYLES: PAYROLL --- */
+    .page-title { font-size: 1.8rem; color: var(--dark-color); text-align: center; margin-bottom: var(--spacing-lg); display: flex; align-items: center; justify-content: center; }
+    .page-title i { margin-right: 15px; color: var(--primary-color); }
+    .section { background: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); box-shadow: var(--box-shadow); }
+    .section h2 { margin-top: 0; padding-bottom: 10px; border-bottom: 2px solid var(--primary-color); font-size: 1.4rem; display: flex; align-items: center; gap: 10px; margin-bottom: var(--spacing-md); }
+    label { display: block; margin: 0.8rem 0 0.3rem 0; font-weight: bold; font-size: 0.9rem; }
+    select, input { padding: 12px; margin: 0; width: 100%; box-sizing: border-box; border-radius: var(--border-radius); border: 1px solid var(--border-color); font-size: 1rem; background-color: #fff; }
+    select:focus, input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2); }
+    button { color: white; border: none; cursor: pointer; border-radius: var(--border-radius); font-size: 1rem; margin-top: 15px; min-height: 44px; padding: 12px 20px; font-weight: bold; transition: opacity 0.2s; }
+    button:hover { opacity: 0.85; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: var(--spacing-md); }
+    .result-area { background-color: #e9f5ff; border: 1px solid #a3d4ff; padding: var(--spacing-lg); border-radius: var(--border-radius); margin-top: 20px; }
+    .result-area h3 { margin-top: 0; color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px;}
+    .result-area p { margin: 10px 0; font-size: 1rem; }
+    .result-area span { font-weight: bold; }
+    #resultAmount { font-size: 1.5em; color: var(--success-color); }
+    hr { margin: 15px 0; border: none; border-top: 1px solid var(--border-color); }
+    #holidayList { list-style-type: none; padding: 0; max-height: 200px; overflow-y: auto; margin-top: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); }
+    #holidayList li { background: var(--light-color); padding: 12px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+    #holidayList li:last-child { margin-bottom: 0; }
+    #calcStatus, #holidayStatus { margin-top: 10px; font-size: 0.9rem; font-weight: 500; min-height: 1.2em; }
     
-    body { 
-      font-family: Arial, sans-serif; 
-      padding: 10px; 
-      background-color: #f9f9f9; 
-      font-size: 16px;
-      line-height: 1.4;
-    }
-    
-    .container { 
-      width: 100%;
-      margin: 0 auto;
-    }
-    
-    h1 { 
-      text-align: center; 
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .back-link {
-      text-align: center;
-      margin-bottom: 1rem;
-      display: block;
-    }
-    
-    .section { 
-      background: #fff; 
-      border: 1px solid #ddd; 
-      border-radius: 8px; 
-      padding: 15px; 
-      margin-bottom: 20px; 
-    }
-    
-    h2 { 
-      margin-top: 0; 
-      padding-bottom: 10px; 
-      border-bottom: 1px solid #eee; 
-      font-size: 1.2rem;
-    }
-    
-    h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.8rem;
-    }
-    
-    h4 {
-      font-size: 1rem;
-      margin: 1rem 0 0.5rem 0;
-    }
-    
-    label {
-      display: block;
-      margin: 0.8rem 0 0.3rem 0;
-      font-weight: bold;
-      font-size: 0.9rem;
-    }
-    
-    select, 
-    input, 
-    button { 
-      padding: 12px 10px; 
-      margin: 0; 
-      width: 100%; 
-      box-sizing: border-box; 
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    
-    button { 
-      color: white; 
-      border: none; 
-      cursor: pointer; 
-      border-radius: 5px; 
-      font-size: 1em; 
-      margin-top: 15px;
-      min-height: 44px; /* Better touch target */
-    }
-    
-    .grid { 
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    .result-area { 
-      background-color: #f0f5ff; 
-      border: 1px solid #b3d7ff; 
-      padding: 15px; 
-      border-radius: 5px; 
-      margin-top: 20px; 
-    }
-    
-    .result-area h3 { 
-      margin-top: 0; 
-    }
-    
-    .result-area p { 
-      margin: 8px 0; 
-      font-size: 1em; 
-    }
-    
-    .result-area span { 
-      font-weight: bold; 
-    }
-    
-    #resultAmount { 
-      font-size: 1.3em; 
-      color: #28a745; 
-    }
-    
-    hr {
-      margin: 10px 0;
-      border: none;
-      border-top: 1px solid #ddd;
-    }
-    
-    /* Holiday section */
-    #holidayList { 
-      list-style-type: none; 
-      padding: 0; 
-      max-height: 150px; 
-      overflow-y: auto; 
-      margin-top: 0.5rem;
-      border: 1px solid #eee;
-      border-radius: 4px;
-    }
-    
-    #holidayList li { 
-      background: #e9ecef; 
-      padding: 10px; 
-      margin-bottom: 5px; 
-      border-radius: 0; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      font-size: 0.9rem;
-    }
-    
-    #holidayList li:last-child {
-      margin-bottom: 0;
-    }
-    
-    #calcStatus,
-    #holidayStatus {
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-    
-    /* Media queries for larger screens */
     @media (min-width: 600px) {
-      body {
-        padding: 20px;
-      }
-      
-      .container {
-        max-width: 600px;
-      }
-      
-      h1 {
-        font-size: 1.8rem;
-        margin-bottom: 1rem;
-      }
-      
-      h2 {
-        font-size: 1.4rem;
-      }
-      
-      .section {
-        padding: 20px;
-      }
-      
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-      }
+      .grid { grid-template-columns: 1fr 1fr; }
     }
-    
-    @media (min-width: 800px) {
-      .container {
-        max-width: 800px;
-      }
-      
-      h1 {
-        font-size: 2rem;
-      }
-      
-      .result-area p {
-        font-size: 1.1em;
-      }
-      
-      #resultAmount {
-        font-size: 1.5em;
-      }
+    @media (max-width: 768px) {
+        .sidebar { left: calc(var(--sidebar-width) * -1); }
+        .sidebar.mobile-visible { left: 0; }
+        .main-wrapper { margin-left: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>💰 Employee Payroll (Hourly)</h1>
-    <a href="employee-dashboard.html" class="back-link">← Back to Employee Dashboard</a>
-
-    <div class="section">
-      <h2>Calculate & Process Payroll</h2>
-      
-      <label for="employeeSelect">Select Employee</label>
-      <select id="employeeSelect"></select>
-      
-      <div class="grid">
-        <div>
-          <label for="startDate">Start Date:</label>
-          <input type="date" id="startDate">
-        </div>
-        <div>
-          <label for="endDate">End Date:</label>
-          <input type="date" id="endDate">
-        </div>
-      </div>
-      
-      <button onclick="calculatePayroll()" style="background-color:#17a2b8;">Calculate Pay</button>
-      
-      <div id="resultArea" class="result-area" style="display:none;">
-        <h3>Calculation Result</h3>
-        <p>Employee: <span id="resultName"></span></p>
-        <p>Period: <span id="resultPeriod"></span></p>
-        <p>Total Hours Worked: <span id="resultHours"></span></p>
-        <p>Hourly Rate: <span id="resultRate"></span></p>
-        <hr>
-        <p>Total Payable Amount: <b id="resultAmount"></b></p>
-        <button onclick="markAsPaid()" style="background-color:#28a745;">Mark as Paid & Record</button>
-      </div>
-      <p id="calcStatus"></p>
-    </div>
-
-    <!-- MANAGE HOLIDAYS SECTION -->
-    <div class="section">
-        <h2>🗓️ Manage Holidays</h2>
-        <p>Holidays added here will be automatically excluded from payroll calculations.</p>
-        <div class="grid">
-            <div>
-              <label for="holidayDate">Holiday Date:</label>
-              <input type="date" id="holidayDate">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                <span>Z3connect</span>
             </div>
-            <div>
-              <label for="holidayName">Holiday Name:</label>
-              <input type="text" id="holidayName" placeholder="e.g., Diwali">
-            </div>
+            <button class="toggle-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <button onclick="addHoliday()" style="background-color:#6f42c1;">Add Holiday</button>
-        <p id="holidayStatus"></p>
-        <h4>Upcoming/Past Holidays:</h4>
-        <ul id="holidayList"></ul>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="../admin_dashboard.html" class="menu-link ">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../view-products.html" class="menu-link ">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../add-product.html" class="menu-link">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../category.html" class="menu-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            
+            <li class="menu-item">
+                <a href="employee.html" class="menu-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-view.html" class="menu-link">
+                    <i class="fas fa-users-slash"></i>
+                    <span>Employees History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-attendance.html" class="menu-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-payroll.html" class="menu-link active">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="../finance-management/finance-dashboard.html" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="../crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="../adduser.html" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
     </div>
-  </div>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="overlay" id="overlay"></div>
+
+    <div class="main-wrapper" id="mainWrapper">
+        <header class="header-navbar">
+            <div class="navbar-left">
+                <button class="toggle-sidebar" id="toggleSidebarBtn"><i class="fas fa-bars"></i></button>
+                <a href="admin_dashboard.html" class="navbar-brand">Z3connect POS</a>
+            </div>
+            <div class="navbar-right">
+                <div class="user-profile">
+                    <div class="avatar">A</div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <h1 class="page-title"><i class="fas fa-calculator"></i> Employee Payroll</h1>
+        
+            <div class="section">
+              <h2><i class="fas fa-file-invoice-dollar"></i> Calculate & Process Payroll</h2>
+              
+              <label for="employeeSelect">Select Employee</label>
+              <select id="employeeSelect"></select>
+              
+              <div class="grid">
+                <div>
+                  <label for="startDate">Start Date:</label>
+                  <input type="date" id="startDate">
+                </div>
+                <div>
+                  <label for="endDate">End Date:</label>
+                  <input type="date" id="endDate">
+                </div>
+              </div>
+              
+              <button onclick="calculatePayroll()" style="background-color: var(--info-color);">Calculate Pay</button>
+              
+              <div id="resultArea" class="result-area" style="display:none;">
+                <h3>Calculation Result</h3>
+                <p>Employee: <span id="resultName"></span></p>
+                <p>Period: <span id="resultPeriod"></span></p>
+                <p>Total Hours Worked: <span id="resultHours"></span></p>
+                <p>Hourly Rate: <span id="resultRate"></span></p>
+                <hr>
+                <p>Total Payable Amount: <b id="resultAmount"></b></p>
+                <button onclick="markAsPaid()" style="background-color: var(--success-color);">Mark as Paid & Record</button>
+              </div>
+              <p id="calcStatus"></p>
+            </div>
+        
+            <div class="section">
+                <h2><i class="fas fa-calendar-alt"></i> Manage Holidays</h2>
+                <p>Holidays added here will be automatically excluded from payroll calculations.</p>
+                <div class="grid">
+                    <div>
+                      <label for="holidayDate">Holiday Date:</label>
+                      <input type="date" id="holidayDate">
+                    </div>
+                    <div>
+                      <label for="holidayName">Holiday Name:</label>
+                      <input type="text" id="holidayName" placeholder="e.g., Diwali">
+                    </div>
+                </div>
+                <button onclick="addHoliday()" style="background-color: var(--purple-color);">Add Holiday</button>
+                <p id="holidayStatus"></p>
+                <h4>Upcoming/Past Holidays:</h4>
+                <ul id="holidayList"></ul>
+            </div>
+        </main>
+    </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="../firebase-config.js"></script>
+  
   <script>
+    // --- SCRIPT FOR SIDEBAR UI ---
+    const sidebar = document.getElementById('sidebar');
+    const mainWrapper = document.getElementById('mainWrapper');
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+    const closeBtn = document.getElementById('closeSidebarBtn');
+    const overlay = document.getElementById('overlay');
+
+    function toggleSidebar() {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            sidebar.classList.toggle('mobile-visible');
+            overlay.classList.toggle('visible');
+        } else {
+            sidebar.classList.toggle('collapsed');
+            mainWrapper.classList.toggle('expanded');
+        }
+    }
+    toggleBtn.addEventListener('click', toggleSidebar);
+    if(closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+    if(overlay) overlay.addEventListener('click', toggleSidebar);
+  </script>
+
+  <script>
+    // --- YOUR ORIGINAL PAYROLL SCRIPT (UNCHANGED) ---
     let lastCalculation = null;
     let holidaysMap = new Map(); // To store holidays for quick lookup
 
-    // Use an async initializer to load multiple data sets
     async function initializePage() {
         await loadEmployees();
         await loadHolidays();
@@ -288,7 +312,6 @@
       select.innerHTML = '<option value="">-- Select an Employee --</option>';
       snapshot.forEach(doc => {
         const emp = doc.data();
-        // Display hourly rate if it exists
         const rateText = emp.hourlyRate ? `(₹${emp.hourlyRate}/hr)` : '(No hourly rate set)';
         const option = new Option(`${emp.name} ${rateText}`, doc.id);
         select.add(option);
@@ -299,6 +322,7 @@
         document.getElementById('resultArea').style.display = 'none';
         const statusEl = document.getElementById('calcStatus');
         statusEl.innerText = 'Calculating...';
+        statusEl.style.color = 'var(--dark-color)';
 
         const employeeId = document.getElementById('employeeSelect').value;
         const startDate = new Date(document.getElementById('startDate').value);
@@ -307,18 +331,20 @@
 
         if (!employeeId || !startDate.getTime() || !endDate.getTime()) {
             statusEl.innerText = "Please select an employee and a valid date range.";
+            statusEl.style.color = 'var(--danger-color)';
             return;
         }
 
         const empDoc = await db.collection("employees").doc(employeeId).get();
         if (!empDoc.exists || !empDoc.data().hourlyRate) {
             statusEl.innerText = "Hourly rate is not set for this employee. Please set it on the Manage Profiles page.";
+            statusEl.style.color = 'var(--danger-color)';
             return;
         }
         
         const employee = empDoc.data();
         let totalHours = 0;
-        let skippedHolidayCount = 0; // To track skipped shifts
+        let skippedHolidayCount = 0;
 
         const attendanceSnapshot = await db.collection("attendance")
           .where("employeeId", "==", employeeId)
@@ -329,25 +355,25 @@
 
         if (attendanceSnapshot.empty) {
             statusEl.innerText = "No completed shifts found for this employee in the selected period.";
+            statusEl.style.color = 'var(--dark-color)';
             return;
         }
 
         attendanceSnapshot.forEach(doc => {
             const att = doc.data();
             const shiftDate = att.date.toDate();
-            const dateString = shiftDate.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+            const dateString = shiftDate.toISOString().split('T')[0];
 
-            // Holiday check
             if (holidaysMap.has(dateString)) {
                 console.log(`Skipping shift on holiday: ${dateString}`);
                 skippedHolidayCount++;
-                return; // Skip this attendance record
+                return;
             }
 
             if (att.clockIn && att.clockOut) {
                 const clockInTime = att.clockIn.toDate();
                 const clockOutTime = att.clockOut.toDate();
-                const hoursWorked = (clockOutTime - clockInTime) / 3600000; // milliseconds to hours
+                const hoursWorked = (clockOutTime - clockInTime) / 3600000;
                 totalHours += hoursWorked;
             }
         });
@@ -362,12 +388,12 @@
         
         document.getElementById('resultArea').style.display = 'block';
         
-        // Update status with holiday info if needed
         let finalStatus = '';
         if (skippedHolidayCount > 0) {
             finalStatus = `Note: ${skippedHolidayCount} shift(s) on holidays were excluded from the calculation.`;
         }
         statusEl.innerText = finalStatus;
+        statusEl.style.color = 'var(--dark-color)';
 
         lastCalculation = {
             employeeId, employeeName: employee.name, startDate, endDate,
@@ -378,6 +404,7 @@
 
     async function markAsPaid() {
       if (!lastCalculation) return;
+      const statusEl = document.getElementById('calcStatus');
 
       const payrollRecord = {
         ...lastCalculation,
@@ -386,40 +413,40 @@
       };
       
       await db.collection("payrollRecords").add(payrollRecord);
-      document.getElementById('calcStatus').innerText = `✅ Payment of ₹${lastCalculation.amount.toFixed(2)} for ${lastCalculation.employeeName} has been recorded.`;
+      statusEl.innerText = `✅ Payment of ₹${lastCalculation.amount.toFixed(2)} for ${lastCalculation.employeeName} has been recorded.`;
+      statusEl.style.color = 'var(--success-color)';
       document.getElementById('resultArea').style.display = 'none';
       lastCalculation = null;
     }
 
-    // Functions for holiday management
     async function addHoliday() {
       const holidayDate = document.getElementById('holidayDate').value;
       const holidayName = document.getElementById('holidayName').value.trim();
       const statusEl = document.getElementById('holidayStatus');
 
       if (!holidayDate || !holidayName) {
-        alert("Please provide both a date and a name for the holiday.");
+        statusEl.innerText = 'Please provide both a date and name.';
+        statusEl.style.color = 'var(--danger-color)';
         return;
       }
 
       statusEl.innerText = "Adding...";
+      statusEl.style.color = 'var(--dark-color)';
       try {
-        // Use the date string 'YYYY-MM-DD' as the document ID for easy lookups
         await db.collection("holidays").doc(holidayDate).set({
           name: holidayName,
-          date: new Date(holidayDate) // Store the full date object as well
+          date: new Date(holidayDate)
         });
         statusEl.innerText = `✅ Holiday "${holidayName}" added successfully.`;
-        statusEl.style.color = 'green';
+        statusEl.style.color = 'var(--success-color)';
         
-        // Clear inputs and reload the holiday list
         document.getElementById('holidayDate').value = '';
         document.getElementById('holidayName').value = '';
         await loadHolidays();
       } catch (error) {
         console.error("Error adding holiday:", error);
         statusEl.innerText = `❌ Error: ${error.message}`;
-        statusEl.style.color = 'red';
+        statusEl.style.color = 'var(--danger-color)';
       }
     }
 
@@ -428,7 +455,7 @@
       const snapshot = await db.collection("holidays").orderBy("date", "desc").get();
       
       listEl.innerHTML = '<li>Loading holidays...</li>';
-      holidaysMap.clear(); // Clear the map before reloading
+      holidaysMap.clear();
       
       if (snapshot.empty) {
         listEl.innerHTML = '<li>No holidays found.</li>';
@@ -437,11 +464,10 @@
       
       listEl.innerHTML = '';
       snapshot.forEach(doc => {
-        // The doc.id is the 'YYYY-MM-DD' string
         holidaysMap.set(doc.id, doc.data().name);
         
         const li = document.createElement('li');
-        li.textContent = `${doc.id}: ${doc.data().name}`;
+        li.innerHTML = `<span><i class="fas fa-calendar-check" style="margin-right: 8px; color: var(--purple-color);"></i> ${doc.id}: ${doc.data().name}</span>`;
         listEl.appendChild(li);
       });
     }

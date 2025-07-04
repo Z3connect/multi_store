@@ -1,484 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manage Categories | Z3connect</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --primary-color: #4361ee;
-      --secondary-color: #3f37c9;
-      --accent-color: #4895ef;
-      --success-color: #4CAF50;
-      --danger-color: #F44336;
-      --warning-color: #FFC107;
-      --text-color: #333;
-      --light-text: #f8f9fa;
-      --bg-color: #f8f9fa;
-      --border-radius: 8px;
-      --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      --transition-speed: 0.3s;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories | Z3connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Base styles from admin_dashboard.html */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #2e9c33;
+            --danger-color: #e63946;
+            --warning-color: #ffc107;
+            --text-color: #333;
+            --light-text: #f8f9fa;
+            --bg-color: #f8f9fa;
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition-speed: 0.3s;
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 16px;
-      line-height: 1.5;
-    }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
 
-    .container {
-      max-width: 100%;
-      margin: 0 auto;
-    }
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            color: var(--light-text);
+            padding: 20px 0;
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar.collapsed { left: calc(var(--sidebar-width) * -1); }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        .logo { font-size: 24px; font-weight: 700; display: flex; align-items: center; }
+        .logo i { margin-right: 10px; }
+        .sidebar-menu { list-style: none; }
+        .menu-item { margin-bottom: 5px; }
+        .menu-link { display: flex; align-items: center; padding: 12px 20px; color: var(--light-text); text-decoration: none; transition: all 0.2s ease; border-radius: 0 30px 30px 0; }
+        .menu-link:hover, .menu-link.active { background-color: rgba(255, 255, 255, 0.1); padding-left: 25px; }
+        .menu-link i { width: 25px; text-align: center; margin-right: 10px; }
+        .menu-section { padding: 10px 20px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-top: 15px; }
 
-    .header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+        /* Main content styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: margin var(--transition-speed) ease;
+        }
+        .main-content.expanded { margin-left: 0; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: var(--header-height);
+            padding: 0 20px;
+            background-color: white;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+        }
+        .toggle-sidebar { background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; }
+        .user-profile { display: flex; align-items: center; }
+        .user-info { margin-right: 10px; text-align: right; }
+        .user-name { font-weight: 600; font-size: 14px; }
+        .user-role { font-size: 12px; color: #666; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--accent-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
 
-    .back-button {
-      background: none;
-      border: none;
-      color: var(--primary-color);
-      font-size: 24px;
-      cursor: pointer;
-      margin-right: 10px;
-      display: flex;
-      align-items: center;
-    }
-
-    .page-title {
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: var(--primary-color);
-      margin: 0;
-      display: flex;
-      align-items: center;
-    }
-
-    .page-title i {
-      margin-right: 10px;
-    }
-
-    .user-info {
-      text-align: center;
-      font-size: 0.85rem;
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    /* Card Styles */
-    .card {
-      background-color: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .card-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin: 0;
-      display: flex;
-      align-items: center;
-    }
-
-    .card-title i {
-      margin-right: 10px;
-      color: var(--primary-color);
-    }
-
-    /* Form Styles */
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 15px;
-    }
-
-    @media (min-width: 768px) {
-      .input-group {
-        flex-direction: row;
-      }
-    }
-
-    .form-control {
-      flex-grow: 1;
-      padding: 12px 15px;
-      border: 1px solid #ddd;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      margin-bottom: 10px;
-    }
-
-    @media (min-width: 768px) {
-      .form-control {
-        margin-bottom: 0;
-        margin-right: 10px;
-      }
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
-    }
-
-    .btn {
-      padding: 12px 20px;
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-    }
-
-    @media (min-width: 768px) {
-      .btn {
-        width: auto;
-      }
-    }
-
-    .btn i {
-      margin-right: 8px;
-    }
-
-    .btn-primary {
-      background-color: var(--primary-color);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: var(--secondary-color);
-    }
-
-    /* Status Message */
-    #status {
-      padding: 10px 0;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      min-height: 40px;
-    }
-
-    /* Category List */
-    .category-list {
-      list-style-type: none;
-      padding: 0;
-      margin-top: 15px;
-    }
-
-    .category-item {
-      background-color: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 15px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: transform 0.2s ease;
-    }
-
-    .category-item:hover {
-      transform: translateY(-2px);
-    }
-
-    .category-name {
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-    }
-
-    .category-name i {
-      margin-right: 10px;
-      color: var(--accent-color);
-    }
-
-    .category-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-
-    .edit-btn {
-      color: var(--warning-color);
-    }
-
-    .edit-btn:hover {
-      background-color: rgba(255, 193, 7, 0.1);
-    }
-
-    .delete-btn {
-      color: var(--danger-color);
-    }
-
-    .delete-btn:hover {
-      background-color: rgba(244, 67, 54, 0.1);
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 30px;
-      color: #666;
-    }
-
-    .empty-state i {
-      font-size: 3rem;
-      margin-bottom: 15px;
-      opacity: 0.3;
-    }
-
-    /* Loading indicator */
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #666;
-    }
-
-    .spinner {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      border-radius: 50%;
-      border-left: 4px solid var(--primary-color);
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Responsive adjustments */
-    @media (min-width: 768px) {
-      body {
-        padding: 24px;
-      }
-
-      .container {
-        max-width: 800px;
-      }
-
-      .card {
-        padding: 25px;
-      }
-    }
-  </style>
+        /* Styles from category.html */
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .page-title i { margin-right: 10px; color: var(--primary-color); }
+        .card { background-color: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); padding: 25px; margin-bottom: 20px; }
+        .card-title { font-size: 1.2rem; font-weight: 600; margin: 0 0 15px 0; display: flex; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .card-title i { margin-right: 10px; color: var(--primary-color); }
+        .input-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        .form-control { flex-grow: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: var(--border-radius); font-size: 1rem; margin-bottom: 10px; }
+        .form-control:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2); }
+        .btn { padding: 12px 20px; border: none; border-radius: var(--border-radius); font-size: 1rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; transition: background-color 0.2s; }
+        .btn i { margin-right: 8px; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--secondary-color); }
+        #status { padding: 10px 0; font-weight: 500; min-height: 40px; }
+        .category-list { list-style-type: none; padding: 0; margin-top: 15px; }
+        .category-item { background-color: #f8f9fa; border-radius: var(--border-radius); padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; transition: transform 0.2s ease; border-left: 4px solid var(--accent-color); }
+        .category-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .category-name { font-weight: 500; }
+        .category-actions { display: flex; gap: 8px; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+        .edit-btn { color: var(--warning-color); }
+        .edit-btn:hover { background-color: rgba(255, 193, 7, 0.1); }
+        .delete-btn { color: var(--danger-color); }
+        .delete-btn:hover { background-color: rgba(230, 70, 70, 0.1); }
+        .empty-state, .loading { text-align: center; padding: 30px; color: #666; }
+        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-left-color: var(--primary-color); width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @media (min-width: 768px) {
+            .input-group { flex-direction: row; }
+            .form-control { margin-bottom: 0; margin-right: 10px; }
+            .btn { width: auto; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { left: calc(var(--sidebar-width) * -1); }
+            .sidebar.mobile-visible { left: 0; }
+            .main-content { margin-left: 0; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+            .overlay.visible { display: block; }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <button class="back-button" onclick="window.location.href='admin_dashboard.html'">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <h1 class="page-title"><i class="fas fa-tags"></i> Manage Categories</h1>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                <span>Z3connect</span>
+            </div>
+            <button class="toggle-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="admin_dashboard.html" class="menu-link ">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="view-products.html" class="menu-link ">
+                    <i class="fas fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="add-product.html" class="menu-link">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="category.html" class="menu-link active">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            
+            <li class="menu-item">
+                <a href="employee-management/employee.html" class="menu-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee-attendance.html" class="menu-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee-payroll.html" class="menu-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="finance-management/finance-dashboard.html" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="adduser.html" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
     </div>
     
-    <div class="user-info">
-      
-    </div>
-
-    <!-- Add Category Card -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Add New Category</h2>
-      </div>
-      
-      <div class="input-group">
-        <input type="text" id="categoryName" class="form-control" placeholder="New category name (e.g., Electronics, Clothing, Food)">
-        <button class="btn btn-primary" onclick="addCategory()">
-          <i class="fas fa-plus"></i> Add Category
-        </button>
-      </div>
-      
-      <div id="status"></div>
-    </div>
-
-    <!-- Categories List Card -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-list"></i> Existing Categories</h2>
-      </div>
-      
-      <div id="categories-container">
-        <div class="loading">
-          <div class="spinner"></div>
-          <p>Loading categories...</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
-  <script>
-    // Function to add a new category
-    function addCategory() {
-      const categoryNameInput = document.getElementById('categoryName');
-      const name = categoryNameInput.value.trim();
-      const statusEl = document.getElementById('status');
-      
-      if (!name) {
-        statusEl.innerHTML = '<span style="color: var(--danger-color);"><i class="fas fa-exclamation-circle"></i> Please enter a category name.</span>';
-        categoryNameInput.focus();
-        return;
-      }
-      
-      // Disable the input and button while processing
-      categoryNameInput.disabled = true;
-      const addBtn = document.querySelector('.btn-primary');
-      const originalBtnText = addBtn.innerHTML;
-      addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-      addBtn.disabled = true;
-      
-      db.collection("categories").add({ name: name }).then(() => {
-        statusEl.innerHTML = `<span style="color: var(--success-color);"><i class="fas fa-check-circle"></i> Category "${name}" added successfully!</span>`;
-        categoryNameInput.value = '';
-        loadCategories(); // Refresh the list
-      }).catch(error => {
-        statusEl.innerHTML = `<span style="color: var(--danger-color);"><i class="fas fa-exclamation-circle"></i> Error: ${error.message}</span>`;
-      }).finally(() => {
-        // Re-enable the input and button
-        categoryNameInput.disabled = false;
-        addBtn.innerHTML = originalBtnText;
-        addBtn.disabled = false;
-        categoryNameInput.focus();
-      });
-    }
-
-    // Function to delete a category
-    function deleteCategory(id, name) {
-      if (confirm(`Are you sure you want to delete the category "${name}"?`)) {
-        db.collection("categories").doc(id).delete()
-          .then(() => {
-            document.getElementById('status').innerHTML = `<span style="color: var(--success-color);"><i class="fas fa-check-circle"></i> Category "${name}" deleted successfully!</span>`;
-            loadCategories(); // Refresh the list
-          })
-          .catch(error => {
-            document.getElementById('status').innerHTML = `<span style="color: var(--danger-color);"><i class="fas fa-exclamation-circle"></i> Error: ${error.message}</span>`;
-          });
-      }
-    }
-
-    // Function to edit a category
-    function editCategory(id, currentName) {
-      const newName = prompt("Enter new category name:", currentName);
-      if (newName !== null && newName.trim() !== "" && newName !== currentName) {
-        db.collection("categories").doc(id).update({ name: newName })
-          .then(() => {
-            document.getElementById('status').innerHTML = `<span style="color: var(--success-color);"><i class="fas fa-check-circle"></i> Category renamed to "${newName}" successfully!</span>`;
-            loadCategories(); // Refresh the list
-          })
-          .catch(error => {
-            document.getElementById('status').innerHTML = `<span style="color: var(--danger-color);"><i class="fas fa-exclamation-circle"></i> Error: ${error.message}</span>`;
-          });
-      }
-    }
-
-    // Function to load and display all categories
-    function loadCategories() {
-      const container = document.getElementById('categories-container');
-      container.innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          <p>Loading categories...</p>
-        </div>
-      `;
-      
-      db.collection("categories").orderBy("name").get().then(snapshot => {
-        if (snapshot.empty) {
-          container.innerHTML = `
-            <div class="empty-state">
-              <i class="fas fa-tags"></i>
-              <p>No categories found. Add your first category above!</p>
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <button class="toggle-sidebar" id="toggleSidebar"><i class="fas fa-bars"></i></button>
+            <div class="user-profile">
+                <div class="user-info"><div class="user-name">z</div><div class="user-role">Administrator</div></div>
+                <div class="avatar">Z</div>
             </div>
-          `;
-          return;
-        }
+        </div>
         
-        let listHTML = '<ul class="category-list">';
-        snapshot.forEach(doc => {
-          const category = doc.data();
-          const categoryId = doc.id;
-          
-          listHTML += `
-            <li class="category-item">
-              <div class="category-name">
-                <i class="fas fa-tag"></i> ${category.name}
-              </div>
-              <div class="category-actions">
-                <button class="action-btn edit-btn" onclick="editCategory('${categoryId}', '${category.name}')">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="action-btn delete-btn" onclick="deleteCategory('${categoryId}', '${category.name}')">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </li>
-          `;
+        <!-- CONTENT FROM category.html STARTS HERE -->
+        <h1 class="page-title"><i class="fas fa-tags"></i> Manage Categories</h1>
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-plus-circle"></i> Add New Category</h2>
+            <div class="input-group">
+                <input type="text" id="categoryName" class="form-control" placeholder="New category name (e.g., Electronics, Clothing)">
+                <button class="btn btn-primary" onclick="addCategory()"><i class="fas fa-plus"></i> Add Category</button>
+            </div>
+            <div id="status"></div>
+        </div>
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-list"></i> Existing Categories</h2>
+            <div id="categories-container"><div class="loading"><div class="spinner"></div><p>Loading categories...</p></div></div>
+        </div>
+        <!-- CONTENT ENDS HERE -->
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    
+    <script>
+        // Sidebar toggle script
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+            const overlay = document.getElementById('overlay');
+            const isMobile = () => window.innerWidth <= 768;
+            
+            toggleSidebarBtn.addEventListener('click', () => {
+                if (isMobile()) {
+                    sidebar.classList.toggle('mobile-visible');
+                    overlay.classList.toggle('visible');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                }
+            });
+            
+            closeSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.remove('mobile-visible');
+                overlay.classList.remove('visible');
+            });
+            
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('mobile-visible');
+                overlay.classList.remove('visible');
+            });
+
+            // Initialize Category Page
+            document.getElementById('categoryName').addEventListener('keypress', e => {
+                if (e.key === 'Enter') addCategory();
+            });
+            loadCategories();
         });
-        listHTML += '</ul>';
-        container.innerHTML = listHTML;
-      }).catch(error => {
-        container.innerHTML = `
-          <div class="empty-state" style="color: var(--danger-color);">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>Error loading categories: ${error.message}</p>
-          </div>
-        `;
-      });
-    }
 
-    // Add enter key press event to the input field
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('categoryName').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          addCategory();
+        // Category Management Logic
+        function addCategory() {
+            const categoryNameInput = document.getElementById('categoryName');
+            const name = categoryNameInput.value.trim();
+            const statusEl = document.getElementById('status');
+            
+            if (!name) {
+                statusEl.innerHTML = `<span style="color: var(--danger-color);"><i class="fas fa-exclamation-circle"></i> Please enter a category name.</span>`;
+                return;
+            }
+            
+            const addBtn = document.querySelector('.btn-primary');
+            addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            addBtn.disabled = true;
+            
+            db.collection("categories").add({ name: name }).then(() => {
+                statusEl.innerHTML = `<span style="color: var(--success-color);"><i class="fas fa-check-circle"></i> Category "${name}" added.</span>`;
+                categoryNameInput.value = '';
+                loadCategories();
+            }).catch(error => {
+                statusEl.innerHTML = `<span style="color: var(--danger-color);">Error: ${error.message}</span>`;
+            }).finally(() => {
+                addBtn.innerHTML = '<i class="fas fa-plus"></i> Add Category';
+                addBtn.disabled = false;
+            });
         }
-      });
-    });
 
-    // Load categories when the page opens
-    window.onload = loadCategories;
-  </script>
+        function deleteCategory(id, name) {
+            if (confirm(`Are you sure you want to delete the category "${name}"?`)) {
+                db.collection("categories").doc(id).delete().then(() => {
+                    document.getElementById('status').innerHTML = `<span style="color: var(--success-color);">Category "${name}" deleted.</span>`;
+                    loadCategories();
+                }).catch(error => {
+                    document.getElementById('status').innerHTML = `<span style="color: var(--danger-color);">Error: ${error.message}</span>`;
+                });
+            }
+        }
+
+        function editCategory(id, currentName) {
+            const newName = prompt("Enter new category name:", currentName);
+            if (newName && newName.trim() !== "" && newName !== currentName) {
+                db.collection("categories").doc(id).update({ name: newName }).then(() => {
+                    document.getElementById('status').innerHTML = `<span style="color: var(--success-color);">Category renamed to "${newName}".</span>`;
+                    loadCategories();
+                }).catch(error => {
+                    document.getElementById('status').innerHTML = `<span style="color: var(--danger-color);">Error: ${error.message}</span>`;
+                });
+            }
+        }
+
+        function loadCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = `<div class="loading"><div class="spinner"></div><p>Loading...</p></div>`;
+            
+            db.collection("categories").orderBy("name").get().then(snapshot => {
+                if (snapshot.empty) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-tags"></i><p>No categories found.</p></div>`;
+                    return;
+                }
+                
+                let listHTML = '<ul class="category-list">';
+                snapshot.forEach(doc => {
+                    const category = doc.data();
+                    const categoryId = doc.id;
+                    listHTML += `
+                        <li class="category-item">
+                            <span class="category-name">${category.name}</span>
+                            <div class="category-actions">
+                                <button class="action-btn edit-btn" title="Edit" onclick="editCategory('${categoryId}', '${category.name}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn delete-btn" title="Delete" onclick="deleteCategory('${categoryId}', '${category.name}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </li>`;
+                });
+                listHTML += '</ul>';
+                container.innerHTML = listHTML;
+            }).catch(error => {
+                container.innerHTML = `<div class="empty-state" style="color: var(--danger-color);"><p>Error: ${error.message}</p></div>`;
+            });
+        }
+    </script>
 </body>
 </html>

@@ -1,1150 +1,1015 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manage Products | POS</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --primary-color: #3f51b5;
-      --secondary-color: #673ab7;
-      --success-color: #4caf50;
-      --danger-color: #f44336;
-      --warning-color: #ff9800;
-      --info-color: #2196f3;
-      --light-gray: #f5f5f5;
-      --dark-gray: #333;
-      --medium-gray: #9e9e9e;
-      --border-radius: 8px;
-      --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      --transition: all 0.3s ease;
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-color: var(--light-gray);
-      color: var(--dark-gray);
-      line-height: 1.6;
-      padding: 16px;
-    }
-    
-    /* Navigation */
-    .nav-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      margin-bottom: 20px;
-    }
-    
-    .nav-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-    }
-    
-    .nav-links a {
-      text-decoration: none;
-      color: var(--primary-color);
-      font-weight: 500;
-      margin-left: 12px;
-    }
-    
-    /* Container Layout */
-    .main-container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .card {
-      background: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .card-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .card-header i {
-      margin-right: 8px;
-      color: var(--primary-color);
-    }
-    
-    .card-header h2 {
-      font-size: 1.2rem;
-      font-weight: 500;
-      margin: 0;
-    }
-    
-    .section-title {
-      margin: 20px 0 10px;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: var(--primary-color);
-      display: flex;
-      align-items: center;
-    }
-    
-    .section-title i {
-      margin-right: 8px;
-    }
-    
-    /* Form Controls */
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      color: var(--dark-gray);
-    }
-    
-    .form-control {
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      border: 1px solid #ddd;
-      border-radius: var(--border-radius);
-      transition: var(--transition);
-    }
-    
-    .form-control:focus {
-      border-color: var(--primary-color);
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
-    }
-    
-    /* Buttons */
-    .btn {
-      display: inline-block;
-      font-weight: 500;
-      text-align: center;
-      white-space: nowrap;
-      vertical-align: middle;
-      user-select: none;
-      border: none;
-      padding: 12px 20px;
-      font-size: 1rem;
-      line-height: 1.5;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      transition: var(--transition);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-bottom: 10px;
-      width: 100%;
-    }
-    
-    .btn-primary {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background-color: #303f9f;
-    }
-    
-    .btn-success {
-      background-color: var(--success-color);
-      color: white;
-    }
-    
-    .btn-success:hover {
-      background-color: #3d8b40;
-    }
-    
-    .btn-danger {
-      background-color: var(--danger-color);
-      color: white;
-    }
-    
-    .btn-danger:hover {
-      background-color: #d32f2f;
-    }
-    
-    .btn-warning {
-      background-color: var(--warning-color);
-      color: white;
-    }
-    
-    .btn-warning:hover {
-      background-color: #e68900;
-    }
-    
-    .btn-info {
-      background-color: var(--info-color);
-      color: white;
-    }
-    
-    .btn-info:hover {
-      background-color: #1976d2;
-    }
-    
-    .btn-secondary {
-      background-color: var(--medium-gray);
-      color: white;
-    }
-    
-    .btn-secondary:hover {
-      background-color: #7d7d7d;
-    }
-    
-    /* Variant List */
-    .variant-container {
-      margin-top: 15px;
-    }
-    
-    #variantList {
-      list-style-type: none;
-      padding: 0;
-      margin-bottom: 20px;
-    }
-    
-    .variant-item {
-      background-color: #f8f9fa;
-      border-radius: var(--border-radius);
-      padding: 12px;
-      margin-bottom: 10px;
-      display: flex;
-      flex-direction: column;
-      border-left: 4px solid var(--primary-color);
-    }
-    
-    .variant-info {
-      margin-bottom: 10px;
-    }
-    
-    .variant-actions {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .variant-actions button {
-      padding: 8px 12px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      color: white;
-    }
-    
-    .edit-btn {
-      background-color: var(--warning-color);
-    }
-    
-    .remove-btn {
-      background-color: var(--danger-color);
-    }
-    
-    /* Status Display */
-    #status {
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: var(--border-radius);
-      font-weight: 500;
-      display: none;
-    }
-    
-    #status.success {
-      background-color: #e8f5e9;
-      color: var(--success-color);
-      display: block;
-    }
-    
-    #status.error {
-      background-color: #ffebee;
-      color: var(--danger-color);
-      display: block;
-    }
-    
-    /* Preview Section */
-    .preview-section {
-      background-color: #f0f4ff;
-      border-radius: var(--border-radius);
-      padding: 15px;
-    }
-    
-    .preview-header {
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      margin-bottom: 15px;
-      color: var(--primary-color);
-    }
-    
-    .preview-header i {
-      margin-right: 8px;
-    }
-    
-    .preview-detail {
-      margin-bottom: 8px;
-    }
-    
-    .preview-detail strong {
-      display: inline-block;
-      width: 120px;
-      color: var(--dark-gray);
-    }
-    
-    /* Product Table */
-    .table-container {
-      overflow-x: auto;
-      margin-top: 20px;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
-    
-    th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-    }
-    
-    th {
-      background-color: var(--primary-color);
-      color: white;
-      position: sticky;
-      top: 0;
-    }
-    
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-    
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-    
-    .actions-cell {
-      width: 150px;
-    }
-    
-    .actions-cell button {
-      margin: 2px;
-      padding: 6px 10px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-      color: white;
-      font-size: 0.8rem;
-    }
-    
-    .deactivated-row {
-      background-color: #fcecec;
-      color: #a9a9a9;
-    }
-    
-    .deactivated-row td {
-      opacity: 0.7;
-    }
-    
-    /* Mobile-friendly product cards */
-    .product-cards-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    
-    .product-card {
-      background-color: white;
-      border-radius: var(--border-radius);
-      border: 1px solid #eee;
-      padding: 16px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    
-    .product-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-    
-    .product-name {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: var(--primary-color);
-      margin: 0;
-    }
-    
-    .status-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-    
-    .status-badge.active {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-    }
-    
-    .status-badge.inactive {
-      background-color: #ffebee;
-      color: #c62828;
-    }
-    
-    .product-details {
-      margin-bottom: 12px;
-    }
-    
-    .product-detail-item {
-      display: flex;
-      margin-bottom: 6px;
-    }
-    
-    .detail-label {
-      width: 90px;
-      font-weight: 500;
-      color: #666;
-    }
-    
-    .detail-value {
-      flex: 1;
-    }
-    
-    .variant-count-badge {
-      display: inline-block;
-      background-color: #e3f2fd;
-      color: #1565c0;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-    }
-    
-    .product-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    
-    .product-actions button {
-      flex: 1;
-      min-width: 110px;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px;
-      color: white;
-      cursor: pointer;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .product-actions button i {
-      margin-right: 6px;
-    }
-    
-    .desktop-only {
-      display: none;
-    }
-    
-    /* For larger screens */
-    @media (min-width: 768px) {
-      .main-container {
-        flex-direction: row;
-      }
-      
-      .form-section {
-        flex: 1;
-        margin-right: 20px;
-      }
-      
-      .preview-section {
-        width: 300px;
-        align-self: flex-start;
-        position: sticky;
-        top: 20px;
-      }
-      
-      .btn {
-        width: auto;
-        margin-right: 10px;
-      }
-      
-      .variant-item {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-      }
-      
-      .variant-info {
-        margin-bottom: 0;
-      }
-      
-      .desktop-only {
-        display: block;
-      }
-      
-      #productListMobile {
-        display: none;
-      }
-    }
-    
-    @media (max-width: 767px) {
-      .table-container {
-        display: none;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Products | Z3connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Base styles from admin_dashboard.html */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #2e9c33;
+            --danger-color: #e63946;
+            --warning-color: #ff9f1c;
+            --info-color: #17a2b8;
+            --text-color: #333;
+            --light-text: #f8f9fa;
+            --bg-color: #f8f9fa;
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            color: var(--light-text);
+            padding: 20px 0;
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: var(--box-shadow);
+        }
+
+        .sidebar.collapsed {
+            left: calc(var(--sidebar-width) * -1);
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--light-text);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 0 30px 30px 0;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding-left: 25px;
+        }
+
+        .menu-link i {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .menu-section {
+            padding: 10px 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            margin-top: 15px;
+        }
+
+        /* Main content styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: margin var(--transition-speed) ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* Header styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: var(--header-height);
+            padding: 0 20px;
+            background-color: white;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info {
+            margin-right: 10px;
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* --- STYLES FROM add-product.html (MERGED) --- */
+
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-header i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .section-title {
+            margin: 20px 0 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--secondary-color); }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover { background-color: #268029; }
+        .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-danger:hover { background-color: #c9302c; }
+        .btn-warning { background-color: var(--warning-color); color: white; }
+        .btn-warning:hover { background-color: #e68900; }
+        .btn-info { background-color: var(--info-color); color: white; }
+        .btn-info:hover { background-color: #117a8b; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        .variant-container { margin-top: 15px; }
+        #variantList { list-style-type: none; padding: 0; margin-bottom: 20px; }
+
+        .variant-item {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            border-left: 4px solid var(--primary-color);
+        }
+        .variant-info { margin-bottom: 10px; }
+        .variant-actions { display: flex; gap: 8px; }
+        .variant-actions button { padding: 8px 12px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.9rem; color: white; }
+        .edit-btn { background-color: var(--warning-color); }
+        .remove-btn { background-color: var(--danger-color); }
+
+        #status {
+            padding: 10px; margin: 10px 0; border-radius: var(--border-radius); font-weight: 500; display: none;
+        }
+        #status.success { background-color: #e8f5e9; color: var(--success-color); display: block; }
+        #status.error { background-color: #ffebee; color: var(--danger-color); display: block; }
+
+        .preview-section { background-color: #f0f4ff; border-radius: var(--border-radius); padding: 15px; }
+        .preview-header { font-weight: 500; display: flex; align-items: center; margin-bottom: 15px; color: var(--primary-color); }
+        .preview-header i { margin-right: 8px; }
+        .preview-detail { margin-bottom: 8px; }
+        .preview-detail strong { display: inline-block; width: 120px; color: var(--text-color); }
+
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: var(--primary-color); color: white; position: sticky; top: 0; z-index: 10; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        .actions-cell button { margin: 2px; padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; color: white; font-size: 0.8rem; }
+
+        .product-cards-container { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+        .product-card { background-color: white; border-radius: var(--border-radius); border: 1px solid #eee; padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .product-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .product-name { font-weight: 600; font-size: 1.1rem; color: var(--primary-color); margin: 0; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+        .status-badge.active { background-color: #e8f5e9; color: #2e7d32; }
+        .status-badge.inactive { background-color: #ffebee; color: #c62828; }
+        .product-details { margin-bottom: 12px; }
+        .product-detail-item { display: flex; margin-bottom: 6px; }
+        .detail-label { width: 90px; font-weight: 500; color: #666; }
+        .detail-value { flex: 1; }
+        .variant-count-badge { display: inline-block; background-color: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+        .product-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .product-actions button { flex: 1; min-width: 110px; padding: 8px 12px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
+        .product-actions button i { margin-right: 6px; }
+        .desktop-only { display: none; }
+
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar { left: calc(var(--sidebar-width) * -1); }
+            .sidebar.mobile-visible { left: 0; }
+            .main-content { margin-left: 0; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+            .overlay.visible { display: block; }
+            .table-container { display: none; }
+        }
+        
+        @media (min-width: 769px) {
+             .main-container { flex-direction: row; }
+            .form-section { flex: 1; min-width: 0; }
+            .preview-section { width: 350px; align-self: flex-start; position: sticky; top: 20px; }
+            .btn { width: auto; margin-right: 10px; }
+            .variant-item { flex-direction: row; justify-content: space-between; align-items: center; }
+            .variant-info { margin-bottom: 0; }
+            .desktop-only { display: block; }
+            #productListMobile { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .header { padding: 0 10px; }
+            .user-info { display: none; }
+        }
+    </style>
 </head>
 <body>
-  <div class="nav-bar">
-    <div class="nav-title">Product Management</div>
-    <div class="nav-links">
-      <a href="view-products.html"><i class="fas fa-box"></i> View Products</a><br>
-      <a href="billing-screen.html"><i class="fas fa-cash-register"></i> Billing</a>
-    </div>
-  </div>
-
-  <div class="main-container">
-    <div class="form-section card">
-      <div class="card-header">
-        <i class="fas fa-plus-circle"></i>
-        <h2 id="form-title">Add New Product</h2>
-      </div>
-      
-      <div class="section-title">
-        <i class="fas fa-info-circle"></i> Step 1: Product Details
-      </div>
-      
-      <div class="form-group">
-        <label for="categorySelect">Category</label>
-        <select id="categorySelect" class="form-control"></select>
-      </div>
-      
-      <div class="form-group">
-        <label for="productName">Product Name</label>
-        <input type="text" id="productName" class="form-control" placeholder="Enter product name">
-      </div>
-      
-      <div class="form-group">
-        <label for="buyingPrice">Buying Price (₹)</label>
-        <input type="number" id="buyingPrice" class="form-control" placeholder="Enter buying price">
-      </div>
-      
-      <div class="section-title">
-        <i class="fas fa-tags"></i> <span id="variant-form-title">Step 2: Add Variants</span>
-      </div>
-      
-      <div class="form-group">
-        <label for="variantSize">Size (e.g., M, L, 32, One Size)</label>
-        <input type="text" id="variantSize" class="form-control" placeholder="Enter size">
-      </div>
-      
-      <div class="form-group">
-        <label for="variantSellingPrice">Selling Price (₹)</label>
-        <input type="number" id="variantSellingPrice" class="form-control" placeholder="Enter selling price">
-      </div>
-      
-      <div class="form-group">
-        <label for="variantStock">Stock Quantity</label>
-        <input type="number" id="variantStock" class="form-control" placeholder="Enter stock quantity">
-      </div>
-      
-      <button id="addVariantBtn" class="btn btn-success" onclick="addOrUpdateVariant()">
-        <i class="fas fa-plus"></i> Add This Variant
-      </button>
-      
-      <button id="cancelVariantEditBtn" class="btn btn-secondary" onclick="cancelVariantEdit()" style="display: none;">
-        <i class="fas fa-times"></i> Cancel Edit
-      </button>
-      
-      <div class="variant-container">
-        <ul id="variantList"></ul>
-      </div>
-      
-      <hr>
-      
-      <button id="saveProductBtn" class="btn btn-primary" onclick="saveProduct()">
-        <i class="fas fa-save"></i> Save Product
-      </button>
-      
-      <button id="cancelEditBtn" class="btn btn-danger" onclick="cancelEdit()" style="display: none;">
-        <i class="fas fa-ban"></i> Cancel Product Edit
-      </button>
-      
-      <div id="status"></div>
-    </div>
-    
-    <div class="preview-section card">
-      <div class="preview-header">
-        <i class="fas fa-eye"></i> Product Preview
-      </div>
-      
-      <div class="preview-detail">
-        <strong>Name:</strong> <span id="previewName">-</span>
-      </div>
-      
-      <div class="preview-detail">
-        <strong>Category:</strong> <span id="previewCategory">-</span>
-      </div>
-      
-      <div class="preview-detail">
-        <strong>Buying Price:</strong> ₹<span id="previewBuyingPrice">-</span>
-      </div>
-      
-      <div class="preview-header" style="margin-top: 20px;">
-        <i class="fas fa-list"></i> Variants Added
-      </div>
-      
-      <ul id="previewVariantList" style="margin-top: 10px;"></ul>
-    </div>
-  </div>
-  
-  <div class="card">
-    <div class="card-header">
-      <i class="fas fa-clipboard-list"></i>
-      <h2>Existing Products</h2>
-    </div>
-    
-    <!-- Mobile-optimized product list -->
-    <div id="productListMobile" class="product-cards-container"></div>
-    
-    <!-- Desktop product table (hidden on mobile) -->
-    <div class="table-container desktop-only">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Variants</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="productListTableBody"></tbody>
-      </table>
-    </div>
-    
-    <div style="margin-top: 15px;">
-      <a href="view-products.html" class="btn btn-info" style="display: inline-block;">
-        <i class="fas fa-search"></i> Go to Full View Page
-      </a>
-    </div>
-  </div>
-  
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
-  <script>
-    let currentVariants = [];
-    let editModeProductId = null;
-    let editingVariantIndex = null;
-
-    function updatePreviewUI() {
-      document.getElementById('previewName').innerText = document.getElementById('productName').value || '-';
-      const catSelect = document.getElementById('categorySelect');
-      if (catSelect.options.length > 0 && catSelect.selectedIndex >= 0) {
-        document.getElementById('previewCategory').innerText = catSelect.options[catSelect.selectedIndex].text;
-      } else {
-        document.getElementById('previewCategory').innerText = '-';
-      }
-      document.getElementById('previewBuyingPrice').innerText = document.getElementById('buyingPrice').value || '-';
-      
-      const variantList = document.getElementById('previewVariantList');
-      variantList.innerHTML = '';
-      
-      if (currentVariants.length === 0) {
-        variantList.innerHTML = '<li style="opacity: 0.7;">No variants added yet</li>';
-        return;
-      }
-      
-      currentVariants.forEach((v, index) => {
-        const listItem = document.createElement('li');
-        listItem.className = 'variant-item';
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                <span>Z3connect</span>
+            </div>
+             <button class="toggle-sidebar" id="closeSidebar" style="color: white; font-size: 24px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
         
-        listItem.innerHTML = `
-          <div class="variant-info">
-            <div><strong>Size:</strong> ${v.size}</div>
-            <div><strong>Price:</strong> ₹${v.sellingPrice}</div>
-            <div><strong>Stock:</strong> ${v.stock} units</div>
-            <div><strong>SKU:</strong> ${v.sku}</div>
-          </div>
-          <div class="variant-actions">
-            <button class="edit-btn" onclick="editVariant(${index})"><i class="fas fa-edit"></i> Edit</button>
-            <button class="remove-btn" onclick="removeVariant(${index})"><i class="fas fa-trash"></i> Remove</button>
-          </div>
-        `;
-        variantList.appendChild(listItem);
-      });
-    }
-
-    function editVariant(index) {
-      editingVariantIndex = index;
-      const variant = currentVariants[index];
-      document.getElementById('variantSize').value = variant.size;
-      document.getElementById('variantSellingPrice').value = variant.sellingPrice;
-      document.getElementById('variantStock').value = variant.stock;
-      document.getElementById('variant-form-title').innerText = 'Step 2: Edit Variant';
-      document.getElementById('addVariantBtn').innerHTML = '<i class="fas fa-check"></i> Update Variant';
-      document.getElementById('addVariantBtn').className = 'btn btn-warning';
-      document.getElementById('cancelVariantEditBtn').style.display = 'inline-block';
-      
-      // Scroll to the variant form
-      document.getElementById('variant-form-title').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function removeVariant(index) {
-      if (confirm('Are you sure you want to remove this variant?')) {
-        currentVariants.splice(index, 1);
-        updatePreviewUI();
-        showStatus('Variant removed successfully', 'success');
-      }
-    }
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="admin_dashboard.html" class="menu-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="view-products.html" class="menu-link ">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="add-product.html" class="menu-link active">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Add Products</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="category.html" class="menu-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="billing-screen.html" class="menu-link">
+                    <i class="fas fa-receipt"></i>
+                    <span>Billing</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="bill-history.html" class="menu-link">
+                    <i class="fas fa-history"></i>
+                    <span>Bill History</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="analytics.html" class="menu-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Employee Management</div>
+            <li class="menu-item">
+                <a href="employee-management/employee-dashboard.html" class="menu-link">
+                    <i class="fas fa-users"></i>
+                    <span>Employee Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee.html" class="menu-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Manage Employees</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee-attendance.html" class="menu-link">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="employee-management/employee-payroll.html" class="menu-link">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            
+            <div class="menu-section">Finance Management</div>
+            <li class="menu-item">
+                <a href="finance-management/finance-dashboard.html" class="menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Finance Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="crm.html" class="menu-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>CRM</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="adduser.html" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Add user</span>
+                </a>
+            </li>
+        </ul>
+    </div>
     
-    function cancelVariantEdit() {
-      editingVariantIndex = null;
-      document.getElementById('variantSize').value = '';
-      document.getElementById('variantSellingPrice').value = '';
-      document.getElementById('variantStock').value = '';
-      document.getElementById('variant-form-title').innerText = 'Step 2: Add Variants';
-      document.getElementById('addVariantBtn').innerHTML = '<i class="fas fa-plus"></i> Add This Variant';
-      document.getElementById('addVariantBtn').className = 'btn btn-success';
-      document.getElementById('cancelVariantEditBtn').style.display = 'none';
-    }
-
-    function addOrUpdateVariant() {
-      const size = document.getElementById('variantSize').value.trim();
-      const sellingPrice = parseFloat(document.getElementById('variantSellingPrice').value);
-      const stock = parseInt(document.getElementById('variantStock').value);
-      const name = document.getElementById('productName').value.trim();
-
-      if (!size || isNaN(sellingPrice) || isNaN(stock) || !name) {
-        showStatus("Please fill all Product Details and Variant fields", 'error');
-        return;
-      }
-      
-      const sku = `${name.slice(0, 4)}-${size}`.toUpperCase().replace(/\s/g, '');
-      const variantData = { sku, size, sellingPrice, stock };
-
-      if (editingVariantIndex !== null) {
-        currentVariants[editingVariantIndex] = variantData;
-        showStatus('Variant updated successfully', 'success');
-      } else {
-        currentVariants.push(variantData);
-        showStatus('Variant added successfully', 'success');
-      }
-
-      updatePreviewUI();
-      cancelVariantEdit();
-      
-      // Clear variant form fields for next entry
-      document.getElementById('variantSize').value = '';
-      document.getElementById('variantSellingPrice').value = '';
-      document.getElementById('variantStock').value = '';
-    }
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
     
-    function cancelEdit() {
-      cancelVariantEdit();
-      editModeProductId = null;
-      currentVariants = [];
-      document.querySelectorAll('.form-section input, .form-section select').forEach(el => {
-        if (el.type !== 'select-one') el.value = '';
-      });
-      document.getElementById('categorySelect').selectedIndex = 0;
-      updatePreviewUI();
-      document.getElementById('form-title').innerText = 'Add New Product';
-      document.getElementById('saveProductBtn').innerHTML = '<i class="fas fa-save"></i> Save Product';
-      document.getElementById('saveProductBtn').className = 'btn btn-primary';
-      document.getElementById('cancelEditBtn').style.display = 'none';
-      document.getElementById('status').style.display = 'none';
-    }
-
-    function loadProductList() {
-      const tableBody = document.getElementById('productListTableBody');
-      const mobileContainer = document.getElementById('productListMobile');
-      
-      // Show loading state for both views
-      tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
-      mobileContainer.innerHTML = '<div class="product-card" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading products...</div>';
-      
-      db.collection("products").orderBy("name").get().then(snapshot => {
-        tableBody.innerHTML = '';
-        mobileContainer.innerHTML = '';
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <button class="toggle-sidebar" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="user-name">z</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+                <div class="avatar">Z</div>
+            </div>
+        </div>
         
-        if (snapshot.empty) {
-          tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No products found. Add your first product!</td></tr>';
-          mobileContainer.innerHTML = '<div class="product-card" style="text-align:center;">No products found. Add your first product!</div>';
-          return;
-        }
-        
-        snapshot.forEach(doc => {
-          const product = doc.data();
-          product.id = doc.id;
-          
-          // ----- DESKTOP TABLE VIEW -----
-          const row = document.createElement('tr');
-          row.className = product.isActive ? '' : 'deactivated-row';
-          const statusText = product.isActive ? 'Active' : 'Inactive';
-          const toggleButtonText = product.isActive ? 'Deactivate' : 'Activate';
-          const toggleButtonColor = product.isActive ? '#ff9800' : '#4caf50';
-          
-          const variantsCell = document.createElement('td');
-          const viewBtn = document.createElement('button');
-          viewBtn.className = 'btn-info actions-cell-button';
-          viewBtn.innerHTML = `<i class="fas fa-eye"></i> View (${product.variants.length})`;
-          viewBtn.onclick = () => {
-            showProductVariants(product);
-          };
-          variantsCell.appendChild(viewBtn);
+        <!-- CONTENT FROM add-product.html STARTS HERE -->
+        <h1 class="page-title">Product Management</h1>
 
-          row.innerHTML = `
-            <td><strong>${product.name}</strong></td>
-            <td>${product.categoryName}</td>
-            <td><span class="status-badge ${product.isActive ? 'active' : 'inactive'}">${statusText}</span></td>
-            <td class="actions-cell">
-              <button style="background-color: #17a2b8;" onclick="editProduct('${product.id}')"><i class="fas fa-edit"></i> Edit</button>
-              <button style="background-color: ${toggleButtonColor};" onclick="toggleProductStatus('${product.id}', ${product.isActive})">
-                <i class="fas fa-${product.isActive ? 'times' : 'check'}"></i> ${toggleButtonText}
+        <div class="main-container">
+            <div class="form-section card">
+              <div class="card-header">
+                <i class="fas fa-plus-circle"></i>
+                <h2 id="form-title">Add New Product</h2>
+              </div>
+              
+              <div class="section-title">
+                <i class="fas fa-info-circle"></i> Step 1: Product Details
+              </div>
+              
+              <div class="form-group">
+                <label for="categorySelect">Category</label>
+                <select id="categorySelect" class="form-control"></select>
+              </div>
+              
+              <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" class="form-control" placeholder="Enter product name">
+              </div>
+              
+              <div class="form-group">
+                <label for="buyingPrice">Buying Price (₹)</label>
+                <input type="number" id="buyingPrice" class="form-control" placeholder="Enter buying price">
+              </div>
+              
+              <div class="section-title">
+                <i class="fas fa-tags"></i> <span id="variant-form-title">Step 2: Add Variants</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="variantSize">Size (e.g., M, L, 32, One Size)</label>
+                <input type="text" id="variantSize" class="form-control" placeholder="Enter size">
+              </div>
+              
+              <div class="form-group">
+                <label for="variantSellingPrice">Selling Price (₹)</label>
+                <input type="number" id="variantSellingPrice" class="form-control" placeholder="Enter selling price">
+              </div>
+              
+              <div class="form-group">
+                <label for="variantStock">Stock Quantity</label>
+                <input type="number" id="variantStock" class="form-control" placeholder="Enter stock quantity">
+              </div>
+              
+              <button id="addVariantBtn" class="btn btn-success" onclick="addOrUpdateVariant()">
+                <i class="fas fa-plus"></i> Add This Variant
               </button>
-            </td>
-          `;
-          row.insertBefore(variantsCell, row.cells[3]);
-          tableBody.appendChild(row);
-          
-          // ----- MOBILE CARD VIEW -----
-          const card = document.createElement('div');
-          card.className = `product-card ${product.isActive ? '' : 'inactive-card'}`;
-          
-          card.innerHTML = `
-            <div class="product-card-header">
-              <h3 class="product-name">${product.name}</h3>
-              <span class="status-badge ${product.isActive ? 'active' : 'inactive'}">${statusText}</span>
+              
+              <button id="cancelVariantEditBtn" class="btn btn-secondary" onclick="cancelVariantEdit()" style="display: none;">
+                <i class="fas fa-times"></i> Cancel Edit
+              </button>
+              
+              <div class="variant-container">
+                 <h4 style="margin-bottom: 10px; font-weight: 500;">Current Variants:</h4>
+                <ul id="variantList"></ul>
+              </div>
+              
+              <hr style="margin: 20px 0;">
+              
+              <button id="saveProductBtn" class="btn btn-primary" onclick="saveProduct()">
+                <i class="fas fa-save"></i> Save Product
+              </button>
+              
+              <button id="cancelEditBtn" class="btn btn-danger" onclick="cancelEdit()" style="display: none;">
+                <i class="fas fa-ban"></i> Cancel Product Edit
+              </button>
+              
+              <div id="status"></div>
             </div>
             
-            <div class="product-details">
-              <div class="product-detail-item">
-                <span class="detail-label">Category:</span>
-                <span class="detail-value">${product.categoryName}</span>
+            <div class="preview-section">
+              <div class="preview-header">
+                <i class="fas fa-eye"></i> Product Preview
               </div>
-              <div class="product-detail-item">
-                <span class="detail-label">Variants:</span>
-                <span class="detail-value">
-                  <span class="variant-count-badge">${product.variants.length}</span>
-                </span>
+              
+              <div class="preview-detail">
+                <strong>Name:</strong> <span id="previewName">-</span>
               </div>
+              <div class="preview-detail">
+                <strong>Category:</strong> <span id="previewCategory">-</span>
+              </div>
+              <div class="preview-detail">
+                <strong>Buying Price:</strong> ₹<span id="previewBuyingPrice">-</span>
+              </div>
+              
+              <div class="preview-header" style="margin-top: 20px;">
+                <i class="fas fa-list"></i> Variants Added
+              </div>
+              
+              <ul id="previewVariantList" style="margin-top: 10px; padding-left: 0; list-style: none;"></ul>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <i class="fas fa-clipboard-list"></i>
+              <h2>Existing Products</h2>
             </div>
             
-            <div class="product-actions">
-              <button style="background-color: #17a2b8;" onclick="showProductVariants(${JSON.stringify(product).replace(/"/g, '&quot;')})">
-                <i class="fas fa-eye"></i> View Variants
-              </button>
-              <button style="background-color: #17a2b8;" onclick="editProduct('${product.id}')">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button style="background-color: ${toggleButtonColor};" onclick="toggleProductStatus('${product.id}', ${product.isActive})">
-                <i class="fas fa-${product.isActive ? 'times' : 'check'}"></i> ${toggleButtonText}
-              </button>
+            <div id="productListMobile" class="product-cards-container"></div>
+            
+            <div class="table-container desktop-only">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Variants</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="productListTableBody"></tbody>
+              </table>
             </div>
-          `;
-          
-          mobileContainer.appendChild(card);
-        });
-      }).catch(error => {
-        console.error("Error loading products:", error);
-        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Error loading products: ${error.message}</td></tr>`;
-        mobileContainer.innerHTML = `<div class="product-card" style="text-align:center; color: red;">Error loading products: ${error.message}</div>`;
-      });
-    }
+            
+            <div style="margin-top: 15px;">
+              <a href="view-products.html" class="btn btn-info" style="display: inline-block;">
+                <i class="fas fa-search"></i> Go to Full View Page
+              </a>
+            </div>
+          </div>
+        <!-- CONTENT FROM add-product.html ENDS HERE -->
 
-    function toggleProductStatus(productId, currentStatus) {
-      const newStatus = !currentStatus;
-      const statusText = newStatus ? "activate" : "deactivate";
-      
-      if (confirm(`Are you sure you want to ${statusText} this product?`)) {
-        db.collection("products").doc(productId).update({isActive: newStatus})
-          .then(() => {
-            showStatus(`Product ${statusText}d successfully`, 'success');
-            loadProductList();
-          })
-          .catch(error => {
-            showStatus(`Error: ${error.message}`, 'error');
-          });
-      }
-    }
+    </div>
 
-    function editProduct(productId) {
-      db.collection("products").doc(productId).get().then(doc => {
-        if (!doc.exists) {
-          showStatus("Product not found", 'error');
-          return;
-        }
-        
-        const product = doc.data();
-        document.getElementById('productName').value = product.name;
-        document.getElementById('buyingPrice').value = product.buyingPrice;
-        
-        // Set category - with safety check
-        const categorySelect = document.getElementById('categorySelect');
-        if (categorySelect.options.length > 0) {
-          for (let i = 0; i < categorySelect.options.length; i++) {
-            if (categorySelect.options[i].value === product.categoryId) {
-              categorySelect.selectedIndex = i;
-              break;
+    <!-- Scripts from both files -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script>
+        // Sidebar toggle script from admin_dashboard.html
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+            const overlay = document.getElementById('overlay');
+            
+            const isMobile = () => window.innerWidth <= 768;
+            
+            toggleSidebarBtn.addEventListener('click', function() {
+                if (isMobile()) {
+                    sidebar.classList.toggle('mobile-visible');
+                    overlay.classList.toggle('visible');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                }
+            });
+            
+            closeSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-visible');
+                overlay.classList.remove('visible');
+            });
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-visible');
+                overlay.classList.remove('visible');
+            });
+            
+            window.addEventListener('resize', function() {
+                if (!isMobile()) {
+                    sidebar.classList.remove('mobile-visible');
+                    overlay.classList.remove('visible');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    mainContent.classList.remove('expanded');
+                }
+            });
+            
+            if (isMobile()) {
+                sidebar.classList.remove('mobile-visible');
+                mainContent.classList.remove('expanded');
             }
+        });
+
+        // Product management script from add-product.html
+        let currentVariants = [];
+        let editModeProductId = null;
+        let editingVariantIndex = null;
+
+        function updatePreviewUI() {
+          document.getElementById('previewName').innerText = document.getElementById('productName').value || '-';
+          const catSelect = document.getElementById('categorySelect');
+          document.getElementById('previewCategory').innerText = (catSelect.options.length > 0 && catSelect.selectedIndex > 0) ? catSelect.options[catSelect.selectedIndex].text : '-';
+          document.getElementById('previewBuyingPrice').innerText = document.getElementById('buyingPrice').value || '-';
+          
+          const previewList = document.getElementById('previewVariantList');
+          const mainList = document.getElementById('variantList');
+          previewList.innerHTML = '';
+          mainList.innerHTML = '';
+          
+          if (currentVariants.length === 0) {
+            previewList.innerHTML = '<li style="opacity: 0.7;">No variants added yet</li>';
+            return;
+          }
+          
+          currentVariants.forEach((v, index) => {
+            const previewItem = document.createElement('li');
+            previewItem.innerHTML = `<strong>${v.size}</strong>: ₹${v.sellingPrice} (${v.stock} units)`;
+            previewList.appendChild(previewItem);
+            
+            const mainListItem = document.createElement('li');
+            mainListItem.className = 'variant-item';
+            mainListItem.innerHTML = `
+              <div class="variant-info">
+                <span><strong>Size:</strong> ${v.size}, <strong>Price:</strong> ₹${v.sellingPrice}, <strong>Stock:</strong> ${v.stock}</span>
+              </div>
+              <div class="variant-actions">
+                <button class="edit-btn" onclick="editVariant(${index})"><i class="fas fa-edit"></i></button>
+                <button class="remove-btn" onclick="removeVariant(${index})"><i class="fas fa-trash"></i></button>
+              </div>
+            `;
+            mainList.appendChild(mainListItem);
+          });
+        }
+
+        function editVariant(index) {
+          editingVariantIndex = index;
+          const variant = currentVariants[index];
+          document.getElementById('variantSize').value = variant.size;
+          document.getElementById('variantSellingPrice').value = variant.sellingPrice;
+          document.getElementById('variantStock').value = variant.stock;
+          document.getElementById('variant-form-title').innerText = 'Step 2: Edit Variant';
+          document.getElementById('addVariantBtn').innerHTML = '<i class="fas fa-check"></i> Update Variant';
+          document.getElementById('addVariantBtn').className = 'btn btn-warning';
+          document.getElementById('cancelVariantEditBtn').style.display = 'inline-block';
+          document.getElementById('variant-form-title').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function removeVariant(index) {
+          if (confirm('Are you sure you want to remove this variant?')) {
+            currentVariants.splice(index, 1);
+            updatePreviewUI();
+            showStatus('Variant removed successfully', 'success');
           }
         }
         
-        currentVariants = product.variants;
-        updatePreviewUI();
-        editModeProductId = productId;
-        document.getElementById('form-title').innerHTML = '<i class="fas fa-edit"></i> Edit Product';
-        document.getElementById('saveProductBtn').innerHTML = '<i class="fas fa-save"></i> Update Product';
-        document.getElementById('saveProductBtn').className = 'btn btn-warning';
-        document.getElementById('cancelEditBtn').style.display = 'inline-block';
-        
-        // Scroll to top
-        window.scrollTo(0, 0);
-        
-        showStatus('Product loaded for editing', 'success');
-      }).catch(error => {
-        showStatus(`Error loading product: ${error.message}`, 'error');
-      });
-    }
-    
-    function saveProduct() {
-      const categorySelect = document.getElementById('categorySelect');
-      const productName = document.getElementById('productName').value.trim();
-      const buyingPrice = parseFloat(document.getElementById('buyingPrice').value);
-      
-      if (!productName) {
-        showStatus("Please enter a product name", 'error');
-        document.getElementById('productName').focus();
-        return;
-      }
-      
-      if (isNaN(buyingPrice) || buyingPrice <= 0) {
-        showStatus("Please enter a valid buying price", 'error');
-        document.getElementById('buyingPrice').focus();
-        return;
-      }
-      
-      if (currentVariants.length === 0) {
-        showStatus("Please add at least one variant", 'error');
-        document.getElementById('variantSize').focus();
-        return;
-      }
-      
-      // Get selected category
-      if (categorySelect.selectedIndex < 0) {
-        showStatus("Please select a category", 'error');
-        categorySelect.focus();
-        return;
-      }
-      
-      const productData = {
-        name: productName,
-        buyingPrice: buyingPrice,
-        categoryId: categorySelect.value,
-        categoryName: categorySelect.options[categorySelect.selectedIndex].text,
-        variants: currentVariants
-      };
-
-      let promise;
-      if (editModeProductId) {
-        promise = db.collection("products").doc(editModeProductId).update(productData);
-      } else {
-        productData.isActive = true;
-        promise = db.collection("products").add(productData);
-      }
-
-      const saveButton = document.getElementById('saveProductBtn');
-      const originalText = saveButton.innerHTML;
-      saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-      saveButton.disabled = true;
-
-      promise.then(() => {
-        const message = editModeProductId ? 'updated' : 'saved';
-        showStatus(`Product ${message} successfully!`, 'success');
-        cancelEdit();
-        loadProductList();
-      }).catch(error => {
-        showStatus(`Error: ${error.message}`, 'error');
-      }).finally(() => {
-        saveButton.innerHTML = originalText;
-        saveButton.disabled = false;
-      });
-    }
-    
-    function showStatus(message, type) {
-      const statusEl = document.getElementById('status');
-      statusEl.innerText = message;
-      statusEl.className = type;
-      statusEl.style.display = 'block';
-      
-      // Auto-hide after 5 seconds
-      setTimeout(() => {
-        statusEl.style.display = 'none';
-      }, 5000);
-    }
-    
-    // Add this helper function for showing product variants
-    function showProductVariants(product) {
-      let variantDetails = `<div style="padding: 10px;">`;
-      variantDetails += `<h3 style="margin-bottom: 15px;">Variants for ${product.name}</h3>`;
-      
-      if (product.variants.length === 0) {
-        variantDetails += `<p>No variants available for this product.</p>`;
-      } else {
-        product.variants.forEach((v, index) => {
-          variantDetails += `
-            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 3px solid var(--primary-color);">
-              <div style="margin-bottom: 8px;"><strong>Variant #${index + 1}</strong></div>
-              <div><strong>SKU:</strong> ${v.sku}</div>
-              <div><strong>Size:</strong> ${v.size}</div>
-              <div><strong>Selling Price:</strong> ₹${v.sellingPrice}</div>
-              <div><strong>Stock:</strong> ${v.stock} units</div>
-            </div>
-          `; 
-        });
-      }
-      
-      variantDetails += `</div>`;
-      showModal('Product Variants', variantDetails);
-    }
-    
-    // Simple modal implementation
-    function showModal(title, content) {
-      // Check if modal already exists
-      let modal = document.getElementById('infoModal');
-      
-      if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'infoModal';
-        modal.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0,0,0,0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        `;
-        
-        const modalContent = document.createElement('div');
-        modalContent.style.cssText = `
-          background-color: white;
-          padding: 20px;
-          border-radius: 8px;
-          max-width: 90%;
-          max-height: 80%;
-          overflow-y: auto;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        `;
-        
-        const modalHeader = document.createElement('div');
-        modalHeader.style.cssText = `
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 15px;
-          padding-bottom: 10px;
-          border-bottom: 1px solid #eee;
-        `;
-        
-        const modalTitle = document.createElement('h3');
-        modalTitle.id = 'modalTitle';
-        modalTitle.style.margin = '0';
-        
-        const closeButton = document.createElement('button');
-        closeButton.innerHTML = '&times;';
-        closeButton.style.cssText = `
-          background: none;
-          border: none;
-          font-size: 24px;
-          cursor: pointer;
-          color: #777;
-        `;
-        closeButton.onclick = () => modal.remove();
-        
-        const modalBody = document.createElement('div');
-        modalBody.id = 'modalBody';
-        
-        modalHeader.appendChild(modalTitle);
-        modalHeader.appendChild(closeButton);
-        modalContent.appendChild(modalHeader);
-        modalContent.appendChild(modalBody);
-        modal.appendChild(modalContent);
-        
-        document.body.appendChild(modal);
-      }
-      
-      document.getElementById('modalTitle').innerText = title;
-      document.getElementById('modalBody').innerHTML = content;
-      
-      // Close when clicking outside the modal
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-          modal.remove();
+        function cancelVariantEdit() {
+          editingVariantIndex = null;
+          document.getElementById('variantSize').value = '';
+          document.getElementById('variantSellingPrice').value = '';
+          document.getElementById('variantStock').value = '';
+          document.getElementById('variant-form-title').innerText = 'Step 2: Add Variants';
+          document.getElementById('addVariantBtn').innerHTML = '<i class="fas fa-plus"></i> Add This Variant';
+          document.getElementById('addVariantBtn').className = 'btn btn-success';
+          document.getElementById('cancelVariantEditBtn').style.display = 'none';
         }
-      });
-    }
 
-    window.onload = () => {
-      const categorySelect = document.getElementById('categorySelect');
-      
-      // Load categories
-      db.collection("categories").get().then(snapshot => {
-        if (snapshot.empty) {
-          const option = document.createElement("option");
-          option.value = "";
-          option.text = "No categories found";
-          option.disabled = true;
-          categorySelect.add(option);
+        function addOrUpdateVariant() {
+          const size = document.getElementById('variantSize').value.trim();
+          const sellingPrice = parseFloat(document.getElementById('variantSellingPrice').value);
+          const stock = parseInt(document.getElementById('variantStock').value);
+          const name = document.getElementById('productName').value.trim();
+
+          if (!size || isNaN(sellingPrice) || isNaN(stock) || !name) {
+            showStatus("Please fill all Product Details and Variant fields", 'error');
+            return;
+          }
           
-          showStatus("No categories found. Please add categories first.", 'error');
-          return;
+          const sku = `${name.slice(0, 4)}-${size}`.toUpperCase().replace(/\s/g, '');
+          const variantData = { sku, size, sellingPrice, stock };
+
+          if (editingVariantIndex !== null) {
+            currentVariants[editingVariantIndex] = variantData;
+            showStatus('Variant updated successfully', 'success');
+          } else {
+            currentVariants.push(variantData);
+            showStatus('Variant added successfully', 'success');
+          }
+
+          updatePreviewUI();
+          cancelVariantEdit();
+          document.getElementById('variantSize').value = '';
+          document.getElementById('variantSellingPrice').value = '';
+          document.getElementById('variantStock').value = '';
         }
         
-        // First empty option
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.text = "-- Select a category --";
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        categorySelect.add(defaultOption);
+        function cancelEdit() {
+          cancelVariantEdit();
+          editModeProductId = null;
+          currentVariants = [];
+          document.querySelectorAll('.form-section input, .form-section select').forEach(el => {
+            if (el.type !== 'select-one') el.value = '';
+          });
+          document.getElementById('categorySelect').selectedIndex = 0;
+          updatePreviewUI();
+          document.getElementById('form-title').innerText = 'Add New Product';
+          document.getElementById('saveProductBtn').innerHTML = '<i class="fas fa-save"></i> Save Product';
+          document.getElementById('saveProductBtn').className = 'btn btn-primary';
+          document.getElementById('cancelEditBtn').style.display = 'none';
+          document.getElementById('status').style.display = 'none';
+        }
+
+        function loadProductList() {
+          const tableBody = document.getElementById('productListTableBody');
+          const mobileContainer = document.getElementById('productListMobile');
+          tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+          mobileContainer.innerHTML = '<div class="product-card" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading products...</div>';
+          
+          db.collection("products").orderBy("name").get().then(snapshot => {
+            tableBody.innerHTML = '';
+            mobileContainer.innerHTML = '';
+            
+            if (snapshot.empty) {
+              const msg = '<tr><td colspan="5" style="text-align:center;">No products found.</td></tr>';
+              const mobileMsg = '<div class="product-card" style="text-align:center;">No products found.</div>';
+              tableBody.innerHTML = msg;
+              mobileContainer.innerHTML = mobileMsg;
+              return;
+            }
+            
+            snapshot.forEach(doc => {
+              const product = doc.data();
+              product.id = doc.id;
+              
+              const row = document.createElement('tr');
+              const statusText = product.isActive ? 'Active' : 'Inactive';
+              const toggleButtonText = product.isActive ? 'Deactivate' : 'Activate';
+              const toggleButtonColor = product.isActive ? 'var(--warning-color)' : 'var(--success-color)';
+              
+              const variantsCell = document.createElement('td');
+              const viewBtn = document.createElement('button');
+              viewBtn.style.backgroundColor = 'var(--info-color)';
+              viewBtn.innerHTML = `<i class="fas fa-eye"></i> (${product.variants.length})`;
+              viewBtn.onclick = () => showProductVariants(product);
+              variantsCell.appendChild(viewBtn);
+
+              row.innerHTML = `
+                <td><strong>${product.name}</strong></td>
+                <td>${product.categoryName}</td>
+                <td><span class="status-badge ${product.isActive ? 'active' : 'inactive'}">${statusText}</span></td>
+                <td class="actions-cell">
+                  <button style="background-color: var(--warning-color);" onclick="editProduct('${product.id}')"><i class="fas fa-edit"></i></button>
+                  <button style="background-color: ${toggleButtonColor};" onclick="toggleProductStatus('${product.id}', ${product.isActive})">
+                    <i class="fas fa-${product.isActive ? 'times' : 'check'}"></i>
+                  </button>
+                </td>
+              `;
+              row.insertBefore(variantsCell, row.cells[3]);
+              tableBody.appendChild(row);
+              
+              const card = document.createElement('div');
+              card.className = `product-card`;
+              card.innerHTML = `
+                <div class="product-card-header">
+                  <h3 class="product-name">${product.name}</h3>
+                  <span class="status-badge ${product.isActive ? 'active' : 'inactive'}">${statusText}</span>
+                </div>
+                <div class="product-details">
+                  <div class="product-detail-item"><span class="detail-label">Category:</span><span class="detail-value">${product.categoryName}</span></div>
+                  <div class="product-detail-item"><span class="detail-label">Variants:</span><span class="detail-value"><span class="variant-count-badge">${product.variants.length}</span></span></div>
+                </div>
+                <div class="product-actions">
+                  <button style="background-color: var(--info-color);" onclick='showProductVariants(${JSON.stringify(product).replace(/'/g, "'")})'><i class="fas fa-eye"></i> Variants</button>
+                  <button style="background-color: var(--warning-color);" onclick="editProduct('${product.id}')"><i class="fas fa-edit"></i> Edit</button>
+                  <button style="background-color: ${toggleButtonColor};" onclick="toggleProductStatus('${product.id}', ${product.isActive})"><i class="fas fa-${product.isActive ? 'times' : 'check'}"></i> ${toggleButtonText}</button>
+                </div>
+              `;
+              mobileContainer.appendChild(card);
+            });
+          }).catch(error => { console.error("Error loading products:", error); });
+        }
+
+        function toggleProductStatus(productId, currentStatus) {
+            const newStatus = !currentStatus;
+            const statusText = newStatus ? "activate" : "deactivate";
+            if (confirm(`Are you sure you want to ${statusText} this product?`)) {
+                db.collection("products").doc(productId).update({isActive: newStatus})
+                  .then(() => { showStatus(`Product ${statusText}d successfully`, 'success'); loadProductList(); })
+                  .catch(error => { showStatus(`Error: ${error.message}`, 'error'); });
+            }
+        }
+
+        function editProduct(productId) {
+            db.collection("products").doc(productId).get().then(doc => {
+                if (!doc.exists) { showStatus("Product not found", 'error'); return; }
+                const product = doc.data();
+                document.getElementById('productName').value = product.name;
+                document.getElementById('buyingPrice').value = product.buyingPrice;
+                const categorySelect = document.getElementById('categorySelect');
+                if (categorySelect.options.length > 0) {
+                    for (let i = 0; i < categorySelect.options.length; i++) {
+                        if (categorySelect.options[i].value === product.categoryId) { categorySelect.selectedIndex = i; break; }
+                    }
+                }
+                currentVariants = product.variants;
+                updatePreviewUI();
+                editModeProductId = productId;
+                document.getElementById('form-title').innerHTML = '<i class="fas fa-edit"></i> Edit Product';
+                document.getElementById('saveProductBtn').innerHTML = '<i class="fas fa-save"></i> Update Product';
+                document.getElementById('saveProductBtn').className = 'btn btn-warning';
+                document.getElementById('cancelEditBtn').style.display = 'inline-block';
+                window.scrollTo(0, 0);
+            }).catch(error => { showStatus(`Error loading product: ${error.message}`, 'error'); });
+        }
         
-        snapshot.forEach(doc => {
-          const option = document.createElement("option");
-          option.value = doc.id;
-          option.text = doc.data().name;
-          categorySelect.add(option);
-        });
-      }).catch(error => {
-        console.error("Error loading categories:", error);
-        showStatus(`Error loading categories: ${error.message}`, 'error');
-      });
-      
-      loadProductList();
-      updatePreviewUI();
-    };
-  </script>
+        function saveProduct() {
+          const categorySelect = document.getElementById('categorySelect');
+          const productName = document.getElementById('productName').value.trim();
+          const buyingPrice = parseFloat(document.getElementById('buyingPrice').value);
+          
+          if (!productName || isNaN(buyingPrice) || buyingPrice <= 0 || currentVariants.length === 0 || categorySelect.selectedIndex <= 0) {
+            showStatus("Please fill all required fields and add at least one variant.", 'error');
+            return;
+          }
+
+          const productData = {
+            name: productName,
+            buyingPrice: buyingPrice,
+            categoryId: categorySelect.value,
+            categoryName: categorySelect.options[categorySelect.selectedIndex].text,
+            variants: currentVariants
+          };
+
+          let promise;
+          if (editModeProductId) {
+            promise = db.collection("products").doc(editModeProductId).update(productData);
+          } else {
+            productData.isActive = true;
+            promise = db.collection("products").add(productData);
+          }
+
+          const saveButton = document.getElementById('saveProductBtn');
+          saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+          saveButton.disabled = true;
+
+          promise.then(() => {
+            showStatus(`Product ${editModeProductId ? 'updated' : 'saved'} successfully!`, 'success');
+            cancelEdit();
+            loadProductList();
+          }).catch(error => { showStatus(`Error: ${error.message}`, 'error'); })
+          .finally(() => { 
+            saveButton.innerHTML = editModeProductId ? '<i class="fas fa-save"></i> Update Product' : '<i class="fas fa-save"></i> Save Product';
+            saveButton.disabled = false;
+          });
+        }
+        
+        function showStatus(message, type) {
+          const statusEl = document.getElementById('status');
+          statusEl.innerText = message;
+          statusEl.className = type;
+          statusEl.style.display = 'block';
+          setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+        }
+        
+        function showProductVariants(product) {
+          let variantDetails = `<div style="padding: 10px;"><h3 style="margin-bottom: 15px;">Variants for ${product.name}</h3>`;
+          if (product.variants.length === 0) {
+            variantDetails += `<p>No variants available.</p>`;
+          } else {
+            product.variants.forEach((v, index) => {
+              variantDetails += `<div style="background-color: #f8f9fa; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 3px solid var(--primary-color);"><div><strong>SKU:</strong> ${v.sku} | <strong>Size:</strong> ${v.size} | <strong>Price:</strong> ₹${v.sellingPrice} | <strong>Stock:</strong> ${v.stock} units</div></div>`; 
+            });
+          }
+          variantDetails += `</div>`;
+          showModal('Product Variants', variantDetails);
+        }
+        
+        function showModal(title, content) {
+          let modal = document.getElementById('infoModal');
+          if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'infoModal';
+            modal.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000;`;
+            modal.innerHTML = `<div style="background-color: white; padding: 20px; border-radius: 8px; max-width: 90%; width: 600px; max-height: 80%; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2);"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;"><h3 id="modalTitle" style="margin: 0;"></h3><button id="modalClose" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #777;">×</button></div><div id="modalBody"></div></div>`;
+            document.body.appendChild(modal);
+            document.getElementById('modalClose').onclick = () => modal.remove();
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+          }
+          document.getElementById('modalTitle').innerText = title;
+          document.getElementById('modalBody').innerHTML = content;
+        }
+
+        window.onload = () => {
+          const categorySelect = document.getElementById('categorySelect');
+          db.collection("categories").get().then(snapshot => {
+            let defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.text = "-- Select a category --";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            categorySelect.add(defaultOption);
+            if (snapshot.empty) {
+                showStatus("No categories found. Please add categories first.", 'warning');
+                return;
+            }
+            snapshot.forEach(doc => {
+              const option = document.createElement("option");
+              option.value = doc.id;
+              option.text = doc.data().name;
+              categorySelect.add(option);
+            });
+          }).catch(error => { showStatus(`Error loading categories: ${error.message}`, 'error'); });
+          
+          loadProductList();
+          updatePreviewUI();
+
+          document.getElementById('productName').addEventListener('input', updatePreviewUI);
+          document.getElementById('buyingPrice').addEventListener('input', updatePreviewUI);
+          document.getElementById('categorySelect').addEventListener('change', updatePreviewUI);
+        };
+    </script>
 </body>
 </html>
